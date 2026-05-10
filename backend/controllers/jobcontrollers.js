@@ -1,7 +1,7 @@
 const Job = require("../models/Job");
 const User = require("../models/User");
 const Company = require("../models/Company");
-const Application = require("../models/Application");
+const Application = require("../models/application");
 
 // create jobs
 

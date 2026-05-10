@@ -1,6 +1,6 @@
 const User = require("../models/User");
 const Job = require("../models/Job");
-const Application = require("../models/Application");
+const Application = require("../models/application");
 const Notification = require("../models/Notification");
 const Report = require("../models/Report");
 const Company = require("../models/Company"); // Make sure this is imported
