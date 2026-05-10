@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import Layout from "../components/Layout";
 import api from "../utils/api";
+import { ASSET_BASE_URL } from "../utils/config";
 import {  Briefcase, BriefcaseBusiness, IndianRupee, MapPin, Search, Filter, X } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 
@@ -22,8 +23,9 @@ const StudentJobs = () => {
     if (!company?.logo) return null;
     const logo = company.logo;
     if (logo.startsWith("http")) return logo;
-    if (logo.startsWith("/uploads")) return `http://localhost:8000${logo}`;
-    return `http://localhost:8000/uploads/company/${logo}`;
+    const assetBaseUrl = ASSET_BASE_URL || "";
+    if (logo.startsWith("/uploads")) return `${assetBaseUrl}${logo}`;
+    return `${assetBaseUrl}/uploads/company/${logo}`;
   };
 
 

@@ -1,6 +1,4 @@
-import React from 'react'
 import { useState } from 'react'
-import axios from 'axios'
 import { useNavigate, Link } from 'react-router-dom'
 import { GraduationCap } from "lucide-react";
 import { toast } from "react-hot-toast";

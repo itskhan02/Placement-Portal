@@ -11,7 +11,7 @@ const Notification = ({ onMarkRead }) => {
       const res = await api.get("/notification");
       setData(res.data.notifications);
     } catch (err) {
-      console.log(err);
+      console.error("Failed to fetch notifications:", err);
       setData([]);
     }
   };
@@ -36,7 +36,7 @@ const handleClick = async (n) => {
 
     if (n.link) navigate(n.link);
   } catch (err) {
-    console.log(err);
+    console.error("Failed to open notification:", err);
   }
 };
 

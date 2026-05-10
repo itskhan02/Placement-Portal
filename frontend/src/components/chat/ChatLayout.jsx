@@ -15,7 +15,7 @@ const ChatLayout = () => {
   );
 
   return (
-    <div className="h-[calc(100vh-80px)] sm:h-[calc(100vh-100px)] md:h-[calc(100vh-120px)] bg-gradient-to-br from-gray-50 to-white rounded-xl sm:rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+    <div className="h-[calc(100vh-80px)] sm:h-[calc(100vh-100px)] md:h-[calc(100vh-120px)] bg-gradient-to-br from-gray-50 to-white rounded-xl sm:rounded-2xl shadow-xl overflow-hidden scrollbar-hide border border-gray-100">
       <div className="flex h-full transition-all duration-300">
         {/* Chat List */}
         <div

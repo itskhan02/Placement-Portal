@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import Layout from "../components/Layout";
 import api from "../utils/api";
+import { ASSET_BASE_URL } from "../utils/config";
 import {
   MessageCircle,
   FileText,
@@ -200,7 +201,7 @@ const RecruiterApplicants = () => {
                         {/* Resume Button */}
                         {app.applicant?.profile?.resume?.fileUrl ? (
                           <a
-                            href={`http://localhost:8000${app.applicant.profile.resume.fileUrl}`}
+                            href={`${ASSET_BASE_URL || ""}${app.applicant.profile.resume.fileUrl}`}
                             target="_blank"
                             rel="noreferrer"
                             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors duration-200 text-sm font-medium border border-blue-200"

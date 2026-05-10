@@ -10,6 +10,13 @@ const groq = process.env.GROQ_API_KEY
   ? new Groq({ apiKey: process.env.GROQ_API_KEY })
   : null;
 
+const isDevelopment = process.env.NODE_ENV === "development";
+const debugLog = (...args) => {
+  if (isDevelopment) {
+    console.log(...args);
+  }
+};
+
 // Available models 
 const GEMINI_MODELS = [
   "gemini-1.5-flash-001",
@@ -102,7 +109,7 @@ RULES:
 // gemini attempt
 async function tryGemini(resumeText, jobDescription) {
   if (!genAI) {
-    console.log("Gemini not configured (no GEMINI_API_KEY)");
+    debugLog("Gemini not configured (no GEMINI_API_KEY)");
     return null;
   }
 
@@ -110,7 +117,7 @@ async function tryGemini(resumeText, jobDescription) {
 
   for (const model of GEMINI_MODELS) {
     try {
-      console.log(`GEMINI: Trying ${model}...`);
+      debugLog(`GEMINI: Trying ${model}...`);
       const genModel = genAI.getGenerativeModel({ model });
       const result = await genModel.generateContent(prompt);
       const response = await result.response;
@@ -124,22 +131,22 @@ async function tryGemini(resumeText, jobDescription) {
       if (match) jsonStr = match[0];
 
       const analysis = JSON.parse(jsonStr);
-      console.log(`GEMINI (${model}): Score=${analysis.score}`);
+      debugLog(`GEMINI (${model}): Score=${analysis.score}`);
       lastSuccessfulProvider = "gemini";
       return { analysis, provider: "gemini", model };
     } catch (err) {
-      console.log(` GEMINI ${model}: ${err.message}`);
+      debugLog(`GEMINI ${model}: ${err.message}`);
     }
   }
 
-  console.log(" All Gemini models failed");
+  debugLog("All Gemini models failed");
   return null;
 }
 
 // groq attempt
 async function tryGroq(resumeText, jobDescription) {
   if (!groq) {
-    console.log("Groq not configured (no GROQ_API_KEY)");
+    debugLog("Groq not configured (no GROQ_API_KEY)");
     return null;
   }
 
@@ -147,7 +154,7 @@ async function tryGroq(resumeText, jobDescription) {
 
   for (const model of GROQ_MODELS) {
     try {
-      console.log(`GROQ: Trying ${model}...`);
+      debugLog(`GROQ: Trying ${model}...`);
 
       const completion = await groq.chat.completions.create({
         messages: [
@@ -174,15 +181,15 @@ async function tryGroq(resumeText, jobDescription) {
       if (match) jsonStr = match[0];
 
       const analysis = JSON.parse(jsonStr);
-      console.log(`GROQ (${model}): Score=${analysis.score}`);
+      debugLog(`GROQ (${model}): Score=${analysis.score}`);
       lastSuccessfulProvider = "groq";
       return { analysis, provider: "groq", model };
     } catch (err) {
-      console.log(`GROQ ${model}: ${err.message}`);
+      debugLog(`GROQ ${model}: ${err.message}`);
     }
   }
 
-  console.log("All Groq models failed");
+  debugLog("All Groq models failed");
   return null;
 }
 
@@ -191,7 +198,7 @@ async function tryGroq(resumeText, jobDescription) {
 const analyzeResumeWithGemini = async (resumeText, jobDescription) => {
   // Validation
   if (!resumeText || resumeText.trim().length < 50) {
-    console.log("Resume too short (min 50 chars)");
+    debugLog("Resume too short (min 50 chars)");
     return getFallbackAnalysis("resume_too_short");
   }
 
@@ -208,10 +215,10 @@ const analyzeResumeWithGemini = async (resumeText, jobDescription) => {
 
   // Try last successful provider first (faster)
   if (lastSuccessfulProvider === "gemini" && genAI) {
-    console.log("Trying last successful provider: Gemini");
+    debugLog("Trying last successful provider: Gemini");
     result = await tryGemini(resumeText, jobDescription);
   } else if (lastSuccessfulProvider === "groq" && groq) {
-    console.log("Trying last successful provider: Groq");
+    debugLog("Trying last successful provider: Groq");
     result = await tryGroq(resumeText, jobDescription);
   }
 
@@ -225,7 +232,7 @@ const analyzeResumeWithGemini = async (resumeText, jobDescription) => {
 
     // Fallback to Groq (also free)
     if (!result && groq) {
-      console.log("Falling back to Groq...");
+      debugLog("Falling back to Groq...");
       result = await tryGroq(resumeText, jobDescription);
       if (!result) errors.push("Groq: All models failed");
     }

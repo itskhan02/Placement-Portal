@@ -2,17 +2,25 @@ const pdfParse = require("pdf-parse");
 const fs = require("fs");
 const mammoth = require("mammoth");
 
+const isDevelopment = process.env.NODE_ENV === "development";
+
 exports.extractText = async (filePath, mimeType) => {
   try {
-    console.log("Extracting text from:", filePath);
-    console.log("MIME type:", mimeType);
+    if (isDevelopment) {
+      console.log("Extracting text from:", filePath);
+      console.log("MIME type:", mimeType);
+    }
 
     if (mimeType === "application/pdf") {
       const buffer = fs.readFileSync(filePath);
-      console.log("PDF buffer size:", buffer.length);
+      if (isDevelopment) {
+        console.log("PDF buffer size:", buffer.length);
+      }
 
       const data = await pdfParse(buffer);
-      console.log("PDF text extracted, length:", data.text?.length || 0);
+      if (isDevelopment) {
+        console.log("PDF text extracted, length:", data.text?.length || 0);
+      }
 
       if (!data.text || data.text.trim().length < 10) {
         console.warn(
@@ -29,7 +37,9 @@ exports.extractText = async (filePath, mimeType) => {
       mimeType === "application/msword"
     ) {
       const result = await mammoth.extractRawText({ path: filePath });
-      console.log("DOCX text extracted, length:", result.value?.length || 0);
+      if (isDevelopment) {
+        console.log("DOCX text extracted, length:", result.value?.length || 0);
+      }
 
       if (!result.value || result.value.trim().length < 10) {
         console.warn(
@@ -42,7 +52,9 @@ exports.extractText = async (filePath, mimeType) => {
 
     if (mimeType === "text/plain") {
       const text = fs.readFileSync(filePath, "utf-8");
-      console.log("TXT text extracted, length:", text?.length || 0);
+      if (isDevelopment) {
+        console.log("TXT text extracted, length:", text?.length || 0);
+      }
       return text || "";
     }
 

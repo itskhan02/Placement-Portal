@@ -62,7 +62,7 @@ const getFromSession = (key) => {
   try {
     const item = sessionStorage.getItem(key);
     return item ? JSON.parse(item) : null;
-  } catch (e) {
+  } catch {
     return null;
   }
 };
@@ -123,6 +123,8 @@ const priorityConfig = {
   },
 };
 
+const MotionDiv = motion.div;
+
 const ResumeScoreRing = ({ score, size = "lg" }) => {
   const dim = size === "lg" ? 180 : 100;
   const r = dim === 180 ? 72 : 40;
@@ -180,7 +182,7 @@ const SectionScoreBar = ({ name, score, icon }) => {
         <span className="font-bold">{score}%</span>
       </div>
       <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden">
-        <motion.div
+        <MotionDiv
           className={`h-full rounded-full ${color}`}
           initial={{ width: 0 }}
           animate={{ width: `${score}%` }}
@@ -312,11 +314,6 @@ const ResumeAnalyzer = () => {
     if (savedTimestamp) setSessionTimestamp(savedTimestamp);
   };
 
-  const handleSessionExpire = () => {
-    resetForm();
-    toast("Session expired. Please re-upload your resume.", { icon: "⏰" });
-  };
-
   const fetchHistory = async () => {
     try {
       const res = await api.get("/resume/history");
@@ -441,7 +438,7 @@ const ResumeAnalyzer = () => {
             AI is reviewing your resume against the job description...
           </p>
           <div className="h-2 w-80 rounded-full bg-gray-200 overflow-hidden">
-            <motion.div
+        <MotionDiv
               className="h-full rounded-full bg-gradient-to-r from-blue-600 to-indigo-600"
               initial={{ width: "0%" }}
               animate={{ width: "90%" }}
@@ -509,7 +506,7 @@ const ResumeAnalyzer = () => {
         {/* History Panel */}
         <AnimatePresence>
           {showHistory && (
-            <motion.div
+            <MotionDiv
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
@@ -559,7 +556,7 @@ const ResumeAnalyzer = () => {
                   </div>
                 )}
               </div>
-            </motion.div>
+            </MotionDiv>
           )}
         </AnimatePresence>
 
@@ -670,7 +667,7 @@ const ResumeAnalyzer = () => {
         {/* Results */}
         <AnimatePresence>
           {analysis && (
-            <motion.div
+            <MotionDiv
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               className="space-y-6"
@@ -853,7 +850,7 @@ const ResumeAnalyzer = () => {
                       priorityConfig[imp.priority] || priorityConfig.medium;
                     const Icon = cfg.icon;
                     return (
-                      <motion.div
+                      <MotionDiv
                         key={i}
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -885,7 +882,7 @@ const ResumeAnalyzer = () => {
                         >
                           {cfg.label}
                         </span>
-                      </motion.div>
+                      </MotionDiv>
                     );
                   })}
                 </div>
@@ -1008,7 +1005,7 @@ const ResumeAnalyzer = () => {
                   </div>
                 )}
               </div>
-            </motion.div>
+            </MotionDiv>
           )}
         </AnimatePresence>
       </div>

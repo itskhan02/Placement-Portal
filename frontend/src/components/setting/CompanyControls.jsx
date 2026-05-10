@@ -26,7 +26,7 @@ const CompanyControls = ({onEdit}) => {
       const res = await api.get("/users/profile");
       setCompany(res.data.user.profile?.company || null);
     } catch (err) {
-      console.log(err);
+      console.error("Failed to fetch company controls:", err);
     } finally {
       setLoading(false);
     }
@@ -41,7 +41,7 @@ const CompanyControls = ({onEdit}) => {
         isPublic: newValue,
       });
     } catch (err) {
-      console.log(err);
+      console.error("Failed to update company visibility:", err);
       setIsPublic(!isPublic);
     }
   };

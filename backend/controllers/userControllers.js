@@ -371,7 +371,7 @@ exports.verifyEmailUpdateOtp = async (req, res) => {
     res.json({ message: "Email updated successfully", user });
 
   } catch (err) {
-    console.log(err);
+    console.error("Email update verification failed:", err);
     res.status(500).json({ error: "Verification failed" });
   }
 };

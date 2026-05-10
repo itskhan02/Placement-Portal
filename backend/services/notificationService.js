@@ -80,6 +80,6 @@ exports.notify = async ({
       });
     }
   } catch (err) {
-    console.log("Notification Error:", err.message);
+    console.error("Notification Error:", err.message);
   }
 };

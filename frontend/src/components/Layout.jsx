@@ -49,6 +49,7 @@ const recruiterLinks = [
 ];
 
 const Layout = ({ role, children }) => {
+  const MotionDiv = motion.div;
   const [collapsed, setCollapsed] = useState(false);
 
   const location = useLocation();
@@ -66,7 +67,7 @@ const Layout = ({ role, children }) => {
       const res = await api.get("/notification/unread");
       setCount(res.data.count);
     } catch (err) {
-      console.log(err);
+      console.error("Failed to fetch unread notification count:", err);
     }
   };
 
@@ -101,7 +102,7 @@ const Layout = ({ role, children }) => {
           updateAuthUser(res.data.user);
         }
       } catch (err) {
-        console.log(err);
+        console.error("Failed to refresh header user:", err);
       }
     };
 
@@ -396,15 +397,15 @@ const Layout = ({ role, children }) => {
         </header>
 
         {/* content */}
-        <motion.div
-          className="flex-1 overflow-y-auto p-5"
+        <MotionDiv
+          className="flex-1 overflow-y-auto p-5 overflow-hidden scrollbar-hide"
           key={location.pathname}
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.3 }}
         >
           {children}
-        </motion.div>
+        </MotionDiv>
       </div>
     </div>
   );

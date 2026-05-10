@@ -20,6 +20,7 @@ import {
   Award,
 } from "lucide-react";
 import api from "../utils/api";
+import { ASSET_BASE_URL } from "../utils/config";
 
 const StudentProfile = () => {
   const [user, setUser] = useState(null);
@@ -335,8 +336,9 @@ const StudentProfile = () => {
     if (!user?.profile?.profilePicture) return null;
     const pic = user.profile.profilePicture;
     if (pic.startsWith("http")) return pic;
-    if (pic.startsWith("/uploads")) return `http://localhost:8000${pic}`;
-    return `http://localhost:8000/uploads/profiles/${pic}`;
+    const assetBaseUrl = ASSET_BASE_URL || "";
+    if (pic.startsWith("/uploads")) return `${assetBaseUrl}${pic}`;
+    return `${assetBaseUrl}/uploads/profiles/${pic}`;
   };
 
   if (loading) {
@@ -775,7 +777,7 @@ const StudentProfile = () => {
                     </div>
                   </div>
                   <a
-                    href={`http://localhost:8000${user.profile.resume.fileUrl}`}
+                    href={`${ASSET_BASE_URL || ""}${user.profile.resume.fileUrl}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1"

@@ -11,6 +11,9 @@ dotenv.config({ path: path.resolve(__dirname, ".env") });
 dotenv.config({ path: path.resolve(__dirname, "../.env"), override: false });
 const connectDB = require("./config/db");
 
+const _dirname = path.resolve();
+
+
 // Routes
 const jobroutes = require("./routes/jobroutes");
 const authroutes = require("./routes/authroutes");
@@ -30,6 +33,7 @@ const reportRoutes = require("./routes/reportroutes");
 const app = express();
 const server = http.createServer(app);
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+const isDevelopment = process.env.NODE_ENV === "development";
 
 const io = new Server(server, {
   cors: {
@@ -41,17 +45,17 @@ const io = new Server(server, {
 app.set("io", io);
 
 io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
+  if (isDevelopment) {
+    console.log("User connected:", socket.id);
+  }
 
   socket.on("join", (userId) => {
     socket.join(userId);
-    console.log("User joined room:", userId);
+
+    if (isDevelopment) {
+      console.log("User joined room:", userId);
+    }
   });
-
-  // socket.on("sendMessage", ({ sender, receiver, message }) => {
-
-  //   socket.to(receiver).emit("receiveMessage", { sender, message });
-  // });
 
   socket.on("typing", ({ sender, receiver }) => {
     socket.to(receiver).emit("typing", sender);
@@ -62,7 +66,9 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id);
+    if (isDevelopment) {
+      console.log("User disconnected:", socket.id);
+    }
   });
 });
 
@@ -99,6 +105,12 @@ app.use("/api/admin", adminroutes);
 app.use("/api/report", reportRoutes);
 
 
+app.use(express.static(path.join(__dirname, "../frontend/dist")));
+app.get("/{*splat}", (req, res) => {
+  res.sendFile(path.resolve(__dirname, "../frontend/dist/index.html"));
+});
+
+
 
 app.get("/", (req, res) => {
   res.send("API is working correctly");
@@ -126,5 +138,7 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 8000;
 
 server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  if (isDevelopment) {
+    console.log(`Server running on port ${PORT}`);
+  }
 });

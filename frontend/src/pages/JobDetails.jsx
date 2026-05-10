@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import Layout from "../components/Layout";
 import api from "../utils/api";
+import { ASSET_BASE_URL } from "../utils/config";
 import { BriefcaseBusiness, IndianRupee, MapPin, MoveLeft } from "lucide-react";
 
 const JobDetails = () => {
@@ -71,7 +72,7 @@ const JobDetails = () => {
   const companyLogoUrl = job.company?.logo
     ? job.company.logo.startsWith("http")
       ? job.company.logo
-      : `http://localhost:8000${job.company.logo}`
+      : `${ASSET_BASE_URL || ""}${job.company.logo}`
     : null;
 
       

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import { KeyRound } from "lucide-react";
 import { toast } from "react-hot-toast";
+import api from "../utils/api";
 
 
 
@@ -30,14 +30,11 @@ const ResetPassword = () => {
       return toast.error("Passwords do not match");
 
     try {
-      await axios.post(
-        "http://localhost:8000/api/auth/reset-password",
-        {
-          email,
-          otp: form.otp,
-          newPassword: form.newPassword,
-        }
-      );
+      await api.post("/auth/reset-password", {
+        email,
+        otp: form.otp,
+        newPassword: form.newPassword,
+      });
 
       toast.success("Password reset successful");
 

@@ -3,6 +3,7 @@ import Layout from "../components/Layout";
 import { Edit, Save, X, Camera, MapPin, Calendar, Globe, Award } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../utils/api";
+import { ASSET_BASE_URL } from "../utils/config";
 
 const RecruiterProfile = () => {
   const [user, setUser] = useState(null);
@@ -85,7 +86,7 @@ const RecruiterProfile = () => {
 
     setShowOtpModal(true);
 
-  } catch (err) {
+  } catch {
     setError("Failed to send OTP");
   } finally {
     setSaving(false);
@@ -125,7 +126,7 @@ const handleVerifyOtp = async () => {
       });
 
       setUser(res.data.user);
-    } catch (err) {
+    } catch {
       setError("Failed to upload image");
     }
   };
@@ -151,7 +152,7 @@ const handleVerifyOtp = async () => {
             <div className="relative">
               {user.profile?.profilePicture ? (
                 <img
-                  src={`http://localhost:8000${user.profile.profilePicture}`}
+                  src={`${ASSET_BASE_URL || ""}${user.profile.profilePicture}`}
                   className="w-24 h-24 rounded-full object-cover border-4 border-white"
                   alt={user.name}
                 />
@@ -237,7 +238,7 @@ const handleVerifyOtp = async () => {
             <div className="flex items-center gap-4">
               {user.profile.company.logo && (
                 <img
-                  src={`http://localhost:8000${user.profile.company.logo}`}
+                  src={`${ASSET_BASE_URL || ""}${user.profile.company.logo}`}
                   className="w-12 h-12 rounded-full object-cover"
                 />
               )}

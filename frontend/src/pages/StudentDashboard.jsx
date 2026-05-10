@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Layout from "../components/Layout";
 import api from "../utils/api";
+import { ASSET_BASE_URL } from "../utils/config";
 import { toast } from "react-hot-toast";
 import {
   Briefcase,
@@ -26,7 +27,6 @@ const StudentDashboard = () => {
   const fetchDashboard = async () => {
     try {
       const res = await api.get("/student/dashboard");
-      console.log("Dashboard data:", res.data);
       setData(res.data);
     } catch (err) {
       console.error(err);
@@ -41,8 +41,9 @@ const StudentDashboard = () => {
     if (!company?.logo) return null;
     const logo = company.logo;
     if (logo.startsWith("http")) return logo;
-    if (logo.startsWith("/uploads")) return `http://localhost:8000${logo}`;
-    return `http://localhost:8000/uploads/company/${logo}`;
+    const assetBaseUrl = ASSET_BASE_URL || "";
+    if (logo.startsWith("/uploads")) return `${assetBaseUrl}${logo}`;
+    return `${assetBaseUrl}/uploads/company/${logo}`;
   };
 
   const getCompanyName = (company) => {

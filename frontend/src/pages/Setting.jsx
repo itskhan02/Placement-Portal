@@ -25,7 +25,6 @@ const Settings = () => {
 
 
   const handleEditCompany = (id) => {
-    console.log("EDIT ID:", id);
     setCompanyId(id);
     setActive("editCompany");
   };

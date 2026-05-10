@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { FaQuestion } from "react-icons/fa6";
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from "react-hot-toast";
+import api from "../utils/api";
 
 
 
@@ -21,10 +21,7 @@ const ForgotPassword = () => {
     }
 
     try {
-      await axios.post(
-        "http://localhost:8000/api/auth/forgot-password",
-        { email }
-      );
+      await api.post("/auth/forgot-password", { email });
 
       localStorage.setItem("resetEmail", email);
       toast.success("OTP sent to your email");

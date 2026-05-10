@@ -45,7 +45,7 @@ const Reports = () => {
       setLoading(true);
       const res = await api.get("/admin/reports");
       setReports(res.data.reports || []);
-    } catch (err) {
+    } catch {
       toast.error("Failed to fetch reports");
     } finally {
       setLoading(false);
@@ -80,7 +80,7 @@ const Reports = () => {
         userName: "",
         actionType: "",
       });
-    } catch (err) {
+    } catch {
       toast.error("Action failed");
     } finally {
       setActionLoading(null);
@@ -101,7 +101,7 @@ const Reports = () => {
       setSelectedUser(null);
       setSelectedReport(null);
       fetchReports();
-    } catch (err) {
+    } catch {
       toast.error("Failed to send warning");
     } finally {
       setActionLoading(null);

@@ -17,6 +17,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import api from "../utils/api";
+import { ASSET_BASE_URL } from "../utils/config";
 
 const AdminProfile = () => {
   const [user, setUser] = useState(null);
@@ -118,7 +119,7 @@ const AdminProfile = () => {
                 <div className="relative">
                   {user?.profile?.profilePicture ? (
                     <img
-                      src={`http://localhost:8000${user.profile.profilePicture}`}
+                      src={`${ASSET_BASE_URL || ""}${user.profile.profilePicture}`}
                       alt={user.name}
                       className="w-28 h-28 rounded-full object-cover border-4 border-white shadow-lg"
                     />

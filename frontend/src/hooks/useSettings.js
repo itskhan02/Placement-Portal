@@ -27,7 +27,7 @@ const updateSettingsField = async (path, value) => {
       let obj = updated;
 
       for (let i = 0; i < keys.length - 1; i++) {
-        if (!obj[keys[i]]) obj[keys[i]] = {}; // 🔥 ADD THIS
+        if (!obj[keys[i]]) obj[keys[i]] = {};
         obj = obj[keys[i]];
       }
 
@@ -36,7 +36,7 @@ const updateSettingsField = async (path, value) => {
       return { ...updated };
     });
   } catch (err) {
-    console.log(err);
+    console.error("Failed to update settings:", err);
   }
 };
 
@@ -50,7 +50,7 @@ const updateSettingsField = async (path, value) => {
       localStorage.removeItem("user");
       window.location.href = "/";
     } catch (err) {
-      console.log(err);
+      console.error("Failed to log out all sessions:", err);
     }
   };
 

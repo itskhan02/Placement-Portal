@@ -22,11 +22,9 @@ import {
   Award,
   ThumbsUp,
   TrendingUp as TrendingUpIcon,
-  PieChart,
   MapPin,
   Clock,
   Eye,
-  Sparkles,
   Zap,
   Crown,
   Medal,
@@ -41,15 +39,13 @@ import {
   Tooltip,
   ResponsiveContainer,
   CartesianGrid,
-  PieChart as RePieChart,
-  Pie,
-  Cell,
 } from "recharts";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 
 const AdminDashboard = () => {
+  const MotionDiv = motion.div;
   const { user } = useAuth();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -85,7 +81,7 @@ const AdminDashboard = () => {
       // Fetch jobs with most applications
       const res = await api.get("/admin/jobs?sort=applications&limit=5");
       if (res.data?.jobs) {
-        const formattedJobs = res.data.jobs.map((job, index) => ({
+        const formattedJobs = res.data.jobs.map((job) => ({
           id: job._id,
           title: job.title,
           company: job.company?.name || "Unknown Company",
@@ -238,29 +234,6 @@ const AdminDashboard = () => {
     { day: "Sun", students: 2, applications: 6 },
   ];
 
-  const applicationStatusData = [
-    {
-      name: "Pending",
-      value: data?.applicationStats?.pending || 0,
-      color: "#eab308",
-    },
-    {
-      name: "Reviewing",
-      value: data?.applicationStats?.reviewing || 0,
-      color: "#3b82f6",
-    },
-    {
-      name: "Accepted",
-      value: data?.applicationStats?.accepted || 0,
-      color: "#22c55e",
-    },
-    {
-      name: "Rejected",
-      value: data?.applicationStats?.rejected || 0,
-      color: "#ef4444",
-    },
-  ].filter((item) => item.value > 0);
-
   const getRankIcon = (index) => {
     switch (index) {
       case 0:
@@ -316,7 +289,7 @@ const AdminDashboard = () => {
     <Layout role="admin">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header Section with Stats Overview */}
-        <motion.div
+        <MotionDiv
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
@@ -338,10 +311,10 @@ const AdminDashboard = () => {
               <span>Last updated: {new Date().toLocaleTimeString()}</span>
             </div>
           </div> */}
-        </motion.div>
+        </MotionDiv>
 
         {/* Main Stats Cards */}
-        <motion.div
+        <MotionDiv
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
@@ -454,11 +427,11 @@ const AdminDashboard = () => {
               Pending review: {data?.pendingActions?.reports || 0}
             </p>
           </div>
-        </motion.div>
+        </MotionDiv>
 
         {/* <div className="grid  grid-cols-1 lg:grid-cols-3 gap-6"> */}
           {/* Weekly Activity Chart */}
-          <motion.div
+          <MotionDiv
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
@@ -544,13 +517,13 @@ const AdminDashboard = () => {
                 </AreaChart>
               </ResponsiveContainer>
             </div>
-          </motion.div>
+          </MotionDiv>
         {/* </div> */}
 
         {/* Recent Activity & Trending Jobs */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Recent Activity */}
-          <motion.div
+          <MotionDiv
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
@@ -620,12 +593,12 @@ const AdminDashboard = () => {
                 </div>
               )}
             </div>
-          </motion.div>
+          </MotionDiv>
 
           {/* Trending Jobs Section */}
           <div className="space-y-6">
             {/* Trending Jobs */}
-            <motion.div
+            <MotionDiv
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.35 }}
@@ -726,10 +699,10 @@ const AdminDashboard = () => {
                   </div>
                 )}
               </div>
-            </motion.div>
+            </MotionDiv>
 
             {/* Quick Actions */}
-            <motion.div
+            <MotionDiv
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
@@ -779,7 +752,7 @@ const AdminDashboard = () => {
                   Jobs
                 </Link>
               </div>
-            </motion.div>
+            </MotionDiv>
           </div>
         </div>
       </div>

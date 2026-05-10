@@ -36,7 +36,7 @@ const Security = ({ changePassword, logoutAll }) => {
         newPassword: "",
         confirmPassword: "",
       });
-    } catch (err) {
+    } catch {
       toast.error("Failed to update password");
     } finally {
       setLoading(false);

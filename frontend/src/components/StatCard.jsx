@@ -1,7 +1,7 @@
-import React from "react";
 import { TrendingUp, TrendingDown } from "lucide-react";
 
 const StatCard = ({ title, value, icon: Icon, color = "blue", trend }) => {
+  const IconComponent = Icon;
   const colorClasses = {
     blue: "bg-blue-600",
     green: "bg-green-600",
@@ -17,7 +17,7 @@ const StatCard = ({ title, value, icon: Icon, color = "blue", trend }) => {
         <div
           className={`p-2.5 rounded-xl ${colorClasses[color]} text-white shadow-sm`}
         >
-          <Icon size={20} />
+          <IconComponent size={20} />
         </div>
       </div>
       <div className="flex items-end justify-between">

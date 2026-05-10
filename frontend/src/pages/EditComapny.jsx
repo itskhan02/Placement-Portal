@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import api from "../utils/api";
+import { ASSET_BASE_URL } from "../utils/config";
 
 const EditCompany = ({ companyId: propCompanyId, onBack }) => {
   const { id: routeCompanyId } = useParams();
@@ -45,10 +46,10 @@ const EditCompany = ({ companyId: propCompanyId, onBack }) => {
       });
 
       if (c.logo) {
-        setPreview(`http://localhost:8000${c.logo}`);
+        setPreview(`${ASSET_BASE_URL || ""}${c.logo}`);
       }
     } catch (err) {
-      console.log(err);
+      console.error("Failed to fetch company:", err);
     } finally {
       setLoading(false);
     }
@@ -91,7 +92,7 @@ const EditCompany = ({ companyId: propCompanyId, onBack }) => {
         navigate(-1);
       }
     } catch (err) {
-      console.log(err);
+      console.error("Failed to update company:", err);
       toast.error("Update failed");
     }
   };

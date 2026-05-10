@@ -15,7 +15,6 @@ import {
 import { Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import api from "../utils/api";
-import { motion } from "framer-motion";
 
 const RecruiterJobs = () => {
   const [jobs, setJobs] = useState([]);
@@ -129,12 +128,9 @@ const RecruiterJobs = () => {
             </div>
           ) : (
             <div className="space-y-4 mt-6">
-              {jobs.map((job, i) => (
-                <motion.div
+              {jobs.map((job) => (
+                <div
                   key={job._id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05 }}
                   className="rounded-xl border p-5 bg-white hover:shadow-md transition-shadow duration-200"
                 >
                   <div className="flex justify-between">
@@ -209,7 +205,7 @@ const RecruiterJobs = () => {
                       </button>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               ))}
             </div>
           )}

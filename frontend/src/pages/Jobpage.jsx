@@ -1,11 +1,10 @@
 import React from 'react'
 import { useState, useEffect } from 'react'
 import axios from 'axios'
+import { API_BASE_URL } from '../utils/config';
 // import Jobform from '../components/Jobform';
 // import Joblist from '../components/Joblist';
 import { Box, Alert,Snackbar } from '@mui/material';
-
-const BASE_URL = 'http://localhost:8000';
 
 const Jobpage = () => {
   const [jobs, setJobs] = useState([]);
@@ -15,7 +14,7 @@ const Jobpage = () => {
 
   const fetchjobs = async () => {
     try{
-      const res = await axios.get(`${BASE_URL}/api/jobs`);
+      const res = await axios.get(`${API_BASE_URL}/jobs`);
       setJobs(res.data.jobs || []);
     } catch(e) {
       console.error(e);
@@ -27,24 +26,10 @@ const Jobpage = () => {
     void fetchjobs();
   },[]);
 
-  //add job
-  const addjob = async(formdata) => {
-    try{
-      const res = await axios.post(`${BASE_URL}/api/jobs`, formdata);
-      showToast(res.data.msg || "Job added successfully");
-      fetchjobs();
-      return true;
-    } catch(e) {
-      console.error(e);
-      showToast(e?.response?.data?.msg || "Error adding job", "error");
-      return false;
-    }
-  }
-
 //delete job 
   const deletejob = async (id) => {
     try{
-      const res = await axios.delete(`${BASE_URL}/api/jobs/${id}`);
+      const res = await axios.delete(`${API_BASE_URL}/jobs/${id}`);
       showToast(res.data.msg || "Job deleted successfully");
       setJobs((prev)=> prev.filter((job)=> job._id !== id));
     } catch(e) {

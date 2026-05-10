@@ -6,6 +6,8 @@ const nodemailer = require("nodemailer");
 
 require("dotenv").config();
 
+const isDevelopment = process.env.NODE_ENV === "development";
+
 //register
 
 exports.register = async (req, res) => {
@@ -121,9 +123,6 @@ exports.forgotPassword = async (req, res) => {
       },
     });
 
-    console.log("Sending email to:", email);
-    console.log("OTP:", otp);
-
     const mailOptions = {
       from: process.env.EMAIL_USER || "no-reply@example.com",
       to: email,
@@ -148,7 +147,7 @@ exports.forgotPassword = async (req, res) => {
 
     try {
       const info = await transporter.sendMail(mailOptions);
-      if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+      if (isDevelopment && (!process.env.EMAIL_USER || !process.env.EMAIL_PASS)) {
         console.log(
           "Ethereal preview URL:",
           nodemailer.getTestMessageUrl(info),
@@ -157,7 +156,6 @@ exports.forgotPassword = async (req, res) => {
     } catch (emailErr) {
       console.error("Forgot password email error:", emailErr);
       if (process.env.NODE_ENV !== "production") {
-        console.log("Development fallback OTP:", otp);
         return res.json({ message: "OTP generated and sent", otp });
       }
       return res.status(500).json({ error: "Failed to send OTP email" });
