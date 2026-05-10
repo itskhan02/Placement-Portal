@@ -1,6 +1,6 @@
 const Report = require("../models/Report");
 const Notification = require("../models/Notification");
-const User = require("../models/user");
+const User = require("../models/User");
 
 exports.createReport = async (req, res) => {
   try {
