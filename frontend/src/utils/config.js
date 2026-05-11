@@ -1,13 +1,16 @@
 const rawApiUrl =
-  import.meta.env.VITE_API_URL || "https://smart-place-nhnl.onrender.com/api";
+  import.meta.env.VITE_API_URL ||
+  "https://placement-portal-6mmt.onrender.com/api";
 
 export const API_BASE_URL = rawApiUrl.replace(/\/$/, "");
 
 export const SOCKET_URL =
-  import.meta.env.VITE_SOCKET_URL || "https://smart-place-nhnl.onrender.com";
+  import.meta.env.VITE_SOCKET_URL ||
+  "https://placement-portal-6mmt.onrender.com";
 
 export const ASSET_BASE_URL =
-  import.meta.env.VITE_ASSET_URL || "https://smart-place-nhnl.onrender.com";
+  import.meta.env.VITE_ASSET_URL ||
+  "https://placement-portal-6mmt.onrender.com";
 
 export const getAssetUrl = (assetPath) => {
   if (!assetPath) return "";
