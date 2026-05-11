@@ -162,23 +162,25 @@ const Layout = ({ role, children }) => {
         .toUpperCase()
     : "U";
 
-  const getProfilePictureUrl = () => {
-    const picture = user?.profile?.profilePicture || user?.profilePic;
+  // const getProfilePictureUrl = () => {
+  //   const picture = user?.profile?.profilePicture || user?.profilePic;
 
-    if (!picture) return null;
-    if (picture.startsWith("http")) return picture;
+  //   if (!picture) return null;
+  //   if (picture.startsWith("http")) return picture;
 
-    const assetBaseUrl = ASSET_BASE_URL || API_BASE_URL?.replace(/\/api\/?$/, "");
-    if (!assetBaseUrl) return picture;
+  //   const assetBaseUrl = ASSET_BASE_URL || API_BASE_URL?.replace(/\/api\/?$/, "");
+  //   if (!assetBaseUrl) return picture;
 
-    if (picture.startsWith("/")) {
-      return `${assetBaseUrl}${picture}`;
-    }
+  //   if (picture.startsWith("/")) {
+  //     return `${assetBaseUrl}${picture}`;
+  //   }
 
-    return `${assetBaseUrl}/uploads/profiles/${picture}`;
-  };
+  //   return `${assetBaseUrl}/uploads/profiles/${picture}`;
+  // };
 
-  const profilePictureUrl = getProfilePictureUrl();
+  const profilePictureUrl = getAssetUrl(
+    user?.profile?.profilePicture || user?.profilePic,
+  );
 
   useEffect(() => {
     if (!profilePictureUrl || profilePictureRef.current === profilePictureUrl) {

@@ -334,14 +334,14 @@ const StudentProfile = () => {
     }
   };
 
-  const getProfilePictureUrl = () => {
-    if (!user?.profile?.profilePicture) return null;
-    const pic = user.profile.profilePicture;
-    if (pic.startsWith("http")) return pic;
-    const assetBaseUrl = ASSET_BASE_URL || "";
-    if (pic.startsWith("/uploads")) return `${assetBaseUrl}${pic}`;
-    return `${assetBaseUrl}/uploads/profiles/${pic}`;
-  };
+  // const getProfilePictureUrl = () => {
+  //   if (!user?.profile?.profilePicture) return null;
+  //   const pic = user.profile.profilePicture;
+  //   if (pic.startsWith("http")) return pic;
+  //   const assetBaseUrl = ASSET_BASE_URL || "";
+  //   if (pic.startsWith("/uploads")) return `${assetBaseUrl}${pic}`;
+  //   return `${assetBaseUrl}/uploads/profiles/${pic}`;
+  // };
 
   if (loading) {
     return (
@@ -356,7 +356,8 @@ const StudentProfile = () => {
     );
   }
 
-  const profilePicUrl = getProfilePictureUrl();
+  const profilePicUrl = getAssetUrl(user?.profile?.profilePicture);
+
   const resumeUrl = user?.profile?.resume?.fileUrl?.startsWith("http")
     ? user.profile.resume.fileUrl
     : getAssetUrl(user?.profile?.resume?.fileUrl || "");
