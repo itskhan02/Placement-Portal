@@ -785,7 +785,7 @@ const StudentProfile = () => {
                     onClick={() => setPreviewResume(true)}
                     className="group flex items-center  content-center gap-2 px-4 py-2  text-blue-700 rounded-xl hover:text-blue-500 transition-all duration-300  hover:-translate-y-0.5 text-base font-medium"
                   >
-                    Preview Resume
+                    View Resume
                     <ArrowRight
                       size={14}
                     />
