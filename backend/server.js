@@ -105,17 +105,15 @@ app.use("/api/resume", resumeRoutes);
 app.use("/api/admin", adminroutes);
 app.use("/api/report", reportRoutes);
 
+app.use("/", (req, res) => {
+  res.status(404).json({ error: "API route not found" });
+});
 
 app.use(express.static(path.join(__dirname, "../frontend/dist")));
-app.get("/{*splat}", (req, res) => {
+app.get(/.*/, (req, res) => {
   res.sendFile(path.resolve(__dirname, "../frontend/dist/index.html"));
 });
 
-
-
-app.get("/", (req, res) => {
-  res.send("API is working correctly");
-});
 
 app.use((err, req, res, next) => {
   console.error("Error:", err);
