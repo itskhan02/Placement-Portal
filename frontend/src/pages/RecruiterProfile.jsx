@@ -3,7 +3,7 @@ import Layout from "../components/Layout";
 import { Edit, Save, X, Camera, MapPin, Calendar, Globe, Award } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../utils/api";
-import { ASSET_BASE_URL } from "../utils/config";
+import { getAssetUrl } from "../utils/config";
 
 const RecruiterProfile = () => {
   const [user, setUser] = useState(null);
@@ -152,7 +152,7 @@ const handleVerifyOtp = async () => {
             <div className="relative">
               {user.profile?.profilePicture ? (
                 <img
-                  src={`${ASSET_BASE_URL || ""}${user.profile.profilePicture}`}
+                  src={getAssetUrl(user.profile.profilePicture)}
                   className="w-24 h-24 rounded-full object-cover border-4 border-white"
                   alt={user.name}
                 />
@@ -238,7 +238,7 @@ const handleVerifyOtp = async () => {
             <div className="flex items-center gap-4">
               {user.profile.company.logo && (
                 <img
-                  src={`${ASSET_BASE_URL || ""}${user.profile.company.logo}`}
+                  src={getAssetUrl(user.profile.company.logo)}
                   className="w-12 h-12 rounded-full object-cover"
                 />
               )}

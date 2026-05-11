@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import Layout from "../components/Layout";
 import { useNavigate } from "react-router-dom";
-import { Plus, X, ArrowLeft, Briefcase, MapPin, Users, Loader2} from "lucide-react";
+import { Plus, X, ArrowLeft, Briefcase,  Loader2} from "lucide-react";
+import { motion } from "framer-motion";
 import { toast } from "react-hot-toast";
 import api from "../utils/api";
 

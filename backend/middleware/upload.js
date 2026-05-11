@@ -1,41 +1,22 @@
 const multer = require("multer");
 const path = require("path");
-const fs = require("fs");
-
-const ensureDirectoryExists = (dirPath) => {
-  if (!fs.existsSync(dirPath)) {
-    fs.mkdirSync(dirPath, { recursive: true });
-  }
-};
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    let uploadPath = "uploads/";
-
-    if (file.fieldname === "logo") {
-      uploadPath = "uploads/company/";
-    } else if (file.fieldname === "resume") {
-      uploadPath = "uploads/resumes/";
-    } else if (file.fieldname === "image" || req.path.includes("/jobs")) {
-      uploadPath = "uploads/jobs/";
-    } else if (file.fieldname === "file" || req.path.includes("/profile")) {
-      uploadPath = "uploads/profiles/";
-    }
-
-    ensureDirectoryExists(uploadPath);
-    cb(null, uploadPath);
-  },
-  filename: (req, file, cb) => {
-    const uniqueName = Date.now() + "-" + Math.round(Math.random() * 1E9) + path.extname(file.originalname);
-    cb(null, uniqueName);
-  },
-});
+const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
-  // Allow images, PDFs, and documents
-  const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx|txt/;
-  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = allowedTypes.test(file.mimetype);
+  const allowedExtensions = [".jpeg", ".jpg", ".png", ".gif", ".webp", ".pdf", ".doc", ".docx", ".txt"];
+  const allowedMimeTypes = [
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/gif",
+    "image/webp",
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "text/plain",
+  ];
+  const extname = allowedExtensions.includes(path.extname(file.originalname).toLowerCase());
+  const mimetype = allowedMimeTypes.includes(file.mimetype);
 
   if (mimetype && extname) {
     return cb(null, true);

@@ -1,6 +1,10 @@
 const Company = require("../models/Company");
 const User = require("../models/User");
 const mongoose = require("mongoose");
+const {
+  uploadToCloudinary,
+  deleteFromCloudinary,
+} = require("../utils/cloudinaryUpload");
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
@@ -21,14 +25,16 @@ exports.createCompany = async (req, res) => {
       return res.status(400).json({success: false, msg: "Company already exists"});
     }
 
-    const logo = req.file ? `/uploads/company/${req.file.filename}` : "";
+    const uploadedLogo = req.file ? await uploadToCloudinary(req.file, req) : null;
 
     company = await Company.create({
       name: companyName,
       description,
       website,
       location,
-      logo,
+      logo: uploadedLogo?.secure_url || "",
+      logoPublicId: uploadedLogo?.public_id || "",
+      logoResourceType: uploadedLogo?.resource_type || "image",
       userId: req.user._id,
     });
 
@@ -110,7 +116,18 @@ exports.updateCompany = async (req, res) => {
     if (isPublic !== undefined) company.isPublic = isPublic;
 
     if (file) {
-      company.logo = `/uploads/company/${file.filename}`;
+      const uploadedLogo = await uploadToCloudinary(file, req);
+
+      if (company.logoPublicId) {
+        await deleteFromCloudinary(
+          company.logoPublicId,
+          company.logoResourceType || "image",
+        );
+      }
+
+      company.logo = uploadedLogo.secure_url;
+      company.logoPublicId = uploadedLogo.public_id;
+      company.logoResourceType = uploadedLogo.resource_type;
     }
 
     await company.save();
@@ -127,7 +144,6 @@ exports.updateCompany = async (req, res) => {
     });
   }
 };
-
 
 
 

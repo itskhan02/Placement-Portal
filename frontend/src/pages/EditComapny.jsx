@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import api from "../utils/api";
-import { ASSET_BASE_URL } from "../utils/config";
+import { getAssetUrl } from "../utils/config";
 
 const EditCompany = ({ companyId: propCompanyId, onBack }) => {
   const { id: routeCompanyId } = useParams();
@@ -46,7 +46,7 @@ const EditCompany = ({ companyId: propCompanyId, onBack }) => {
       });
 
       if (c.logo) {
-        setPreview(`${ASSET_BASE_URL || ""}${c.logo}`);
+        setPreview(getAssetUrl(c.logo));
       }
     } catch (err) {
       console.error("Failed to fetch company:", err);

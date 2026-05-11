@@ -472,13 +472,23 @@ const AdminApplication = () => {
                             </div>
                           )}
 
-                          {app.job?.company && (
-                            <div className="flex items-center gap-2 text-sm text-gray-500">
+                          {!isJobDeleted && (
+                            <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600 mt-2">
                               <Building2 size={14} className="text-gray-400" />
-                              <span>
+                              <span className="font-semibold text-gray-700">
+                                Recruiter:
+                              </span>
+                              <span className="text-gray-900">
+                                {app.job.createdBy?.name || "N/A"}
+                              </span>
+                              <span className="text-gray-400">|</span>
+                              <span className="font-semibold text-gray-700">
+                                Company:
+                              </span>
+                              <span className="text-gray-900">
                                 {typeof app.job.company === "object"
-                                  ? app.job.company.name
-                                  : app.job.company}
+                                  ? app.job.company?.name
+                                  : app.job.company || "N/A"}
                               </span>
                             </div>
                           )}

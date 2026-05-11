@@ -7,6 +7,8 @@ const companySchema = new mongoose.Schema(
     location: { type: String },
     website: { type: String },
     logo: { type: String, default: "" },
+    logoPublicId: { type: String, default: "" },
+    logoResourceType: { type: String, default: "image" },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

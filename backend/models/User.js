@@ -42,6 +42,8 @@ const userSchema = new mongoose.Schema({
   profile: {
     bio: { type: String, default: "" },
     profilePicture: { type: String, default: "" },
+    profilePicturePublicId: { type: String, default: "" },
+    profilePictureResourceType: { type: String, default: "image" },
     location: { type: String, default: "" },
 
     skills: [{ type: String }],
@@ -62,6 +64,8 @@ const userSchema = new mongoose.Schema({
     resume: {
       fileName: String,
       fileUrl: String,
+      publicId: String,
+      resourceType: String,
       uploadedAt: {
         type: Date,
         default: Date.now,
@@ -71,6 +75,8 @@ const userSchema = new mongoose.Schema({
       {
         fileName: String,
         fileUrl: String,
+        publicId: String,
+        resourceType: String,
         jobDescription: { type: String, default: "" },
         jobTitle: { type: String, default: "" },
         jobId: {

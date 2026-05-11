@@ -242,12 +242,25 @@ const AdminJobs = () => {
                           )}
                         </div>
 
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
                           <Building2 size={14} className="text-gray-400" />
-                          <span>
-                            {job.createdBy?.name ||
-                              job.company?.name ||
-                              "Unknown Company"}
+
+                          <span className="font-semibold text-gray-700">
+                            Recruiter:
+                          </span>
+
+                          <span className="text-gray-900">
+                            {job.createdBy?.name || "N/A"}
+                          </span>
+
+                          <span className="text-gray-400">|</span>
+
+                          <span className="font-semibold text-gray-700">
+                            Company:
+                          </span>
+
+                          <span className="text-gray-900">
+                            {job.company?.name || "N/A"}
                           </span>
                         </div>
                       </div>
@@ -364,7 +377,15 @@ const AdminJobs = () => {
                   {selectedJob.title}
                 </p>
                 <p className="text-sm text-gray-500 mt-1">
-                  {selectedJob.createdBy?.name || selectedJob.company?.name}
+                  <span className="font-semibold text-gray-700">
+                    Recruiter:
+                  </span>{" "}
+                  {selectedJob.createdBy?.name || "N/A"}{" "}
+                  <span className="text-gray-400 mx-1">|</span>{" "}
+                  <span className="font-semibold text-gray-700">
+                    Company:
+                  </span>{" "}
+                  {selectedJob.company?.name || "N/A"}
                 </p>
               </div>
               <p className="text-sm text-red-600 flex items-center gap-2">

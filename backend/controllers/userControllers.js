@@ -2,8 +2,10 @@ const User = require("../models/User");
 const dns = require("dns");
 const nodemailer = require("nodemailer");
 const { promisify } = require("util");
-const fs = require("fs");
-const path = require("path");
+const {
+  uploadToCloudinary,
+  deleteFromCloudinary,
+} = require("../utils/cloudinaryUpload");
 
 const resolveMx = promisify(dns.resolveMx);
 
@@ -103,10 +105,22 @@ exports.updateProfilePicture = async (req, res) => {
       return res.status(400).json({ error: "No file uploaded" });
     }
 
+    const user = await User.findById(userId);
+    const uploadedFile = await uploadToCloudinary(req.file, req);
+
+    if (user?.profile?.profilePicturePublicId) {
+      await deleteFromCloudinary(
+        user.profile.profilePicturePublicId,
+        user.profile.profilePictureResourceType || "image",
+      );
+    }
+
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       {
-        "profile.profilePicture": `/uploads/profiles/${req.file.filename}`,
+        "profile.profilePicture": uploadedFile.secure_url,
+        "profile.profilePicturePublicId": uploadedFile.public_id,
+        "profile.profilePictureResourceType": uploadedFile.resource_type,
       },
       { new: true, runValidators: true }
     ).select("-password");
@@ -117,6 +131,7 @@ exports.updateProfilePicture = async (req, res) => {
     });
 
   } catch (err) {
+    console.error("Profile picture upload error:", err);
     res.status(500).json({ error: "Failed to update profile picture" });
   }
 };
@@ -244,18 +259,20 @@ exports.uploadResume = async (req, res) => {
     }
 
     const user = await User.findById(req.user._id);
+    const uploadedFile = await uploadToCloudinary(req.file, req);
 
-    if (user.profile?.resume?.fileUrl) {
-      const oldPath = path.join(__dirname, "..", user.profile.resume.fileUrl);
-
-      if (fs.existsSync(oldPath)) {
-        fs.unlinkSync(oldPath);
-      }
+    if (user.profile?.resume?.publicId) {
+      await deleteFromCloudinary(
+        user.profile.resume.publicId,
+        user.profile.resume.resourceType || "raw",
+      );
     }
 
     user.profile.resume = {
       fileName: req.file.originalname,
-      fileUrl: `/uploads/resumes/${req.file.filename}`,
+      fileUrl: uploadedFile.secure_url,
+      publicId: uploadedFile.public_id,
+      resourceType: uploadedFile.resource_type,
       uploadedAt: new Date(),
     };
 

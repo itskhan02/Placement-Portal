@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import api from "../../utils/api";
 import { Building2, Globe, MapPin, Pencil } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { ASSET_BASE_URL } from "../../utils/config";
+import { getAssetUrl } from "../../utils/config";
 
 const CompanyControls = ({onEdit}) => {
   const [company, setCompany] = useState(null);
@@ -93,7 +93,7 @@ const CompanyControls = ({onEdit}) => {
           <div className="flex gap-4 items-center">
             {company.logo && (
               <img
-                src={`${ASSET_BASE_URL}${company.logo}`}
+                src={getAssetUrl(company.logo)}
                 className="w-16 h-16 rounded-full object-cover"
               />
             )}

@@ -360,21 +360,44 @@ exports.getAllJobs = async (req, res) => {
 
     let query = {};
 
-    if (status === "active") query.status = "open";
-    if (status === "inactive") query.status = "closed";
-
-    if (search) {
-      query.$or = [
-        { title: { $regex: search, $options: "i" } },
-        { company: { $regex: search, $options: "i" } },
-      ];
+    // Filter jobs
+    if (status === "active") {
+      query.is_active = true;
     }
 
-    const jobs = await Job.find(query).sort({ createdAt: -1 });
+    if (status === "inactive") {
+      query.is_active = false;
+    }
 
-    res.json({ success: true, jobs });
+    // Search filter
+    if (search) {
+      query.$or = [{ title: { $regex: search, $options: "i" } }];
+    }
+
+    // Fetch jobs with populated recruiter + company
+    const jobs = await Job.find(query)
+      .populate({
+        path: "createdBy",
+        select: "name email",
+      })
+      .populate({
+        path: "company",
+        select: "name location",
+      })
+      .sort({ createdAt: -1 });
+
+
+    res.json({
+      success: true,
+      jobs,
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.log(err);
+
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
   }
 };
 
@@ -397,10 +420,16 @@ exports.getAllApplications = async (req, res) => {
       .populate("applicant", "name email")
       .populate({
         path: "job",
-        populate: {
-          path: "company",
-          select: "name location",
-        },
+        populate: [
+          {
+            path: "company",
+            select: "name location",
+          },
+          {
+            path: "createdBy",
+            select: "name email",
+          }
+        ],
       })
       .sort({ createdAt: -1 });
 

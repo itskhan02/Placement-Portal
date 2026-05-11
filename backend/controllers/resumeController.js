@@ -1,12 +1,9 @@
-const fs = require("fs");
-const path = require("path");
 const { extractText } = require("../utils/extractText");
 const { analyzeResumeWithGemini } = require("../services/resumeService");
 const User = require("../models/User");
 
-exports.analyzeResume = async (req, res) => {
-  let filePath = null;
 
+exports.analyzeResume = async (req, res) => {
   try {
     const file = req.file;
     const { jobDescription, jobTitle, jobId } = req.body;
@@ -19,70 +16,63 @@ exports.analyzeResume = async (req, res) => {
       });
     }
 
-    filePath = file.path;
-
-    // Validate file size
+    // Validate size
     if (file.size > 5 * 1024 * 1024) {
-      cleanupFile(filePath);
       return res.status(400).json({
         success: false,
         message: "File size must be less than 5MB",
       });
     }
 
-    // Extract text from resume
-    const resumeText = await extractText(file.path, file.mimetype);
+    // Extract text
+    const resumeText = await extractText(file.buffer, file.mimetype);
+
+    console.log("===== EXTRACTED RESUME TEXT =====");
+    console.log(resumeText.substring(0, 1000));
 
     if (!resumeText || resumeText.trim().length < 50) {
-      cleanupFile(filePath);
       return res.status(400).json({
         success: false,
-        message:
-          "Could not extract enough text from the resume. The file may be image-based, empty, or corrupted. Please upload a text-based PDF or DOCX file.",
-        extractedLength: resumeText?.length || 0,
+        message: "Could not extract enough text from resume.",
       });
     }
 
-    // Analyze resume with AI
+    // AI Analysis
     const analysis = await analyzeResumeWithGemini(
       resumeText,
       jobDescription || "",
     );
 
-    // Save analysis to user's profile
+    // Find user
     const user = await User.findById(req.user._id);
 
     if (!user) {
-      cleanupFile(filePath);
       return res.status(404).json({
         success: false,
         message: "User not found",
       });
     }
 
-    // Store the resume file info in user profile
-    user.profile.resume = {
-      fileName: file.originalname,
-      fileUrl: `/uploads/resumes/${file.filename}`,
-      uploadedAt: new Date(),
-    };
-
-    // Store analysis history in user profile
+    // Initialize history array
     if (!user.profile.resumeAnalysisHistory) {
       user.profile.resumeAnalysisHistory = [];
     }
 
-    // Add new analysis to history (keep last 10)
+    // Save ONLY analysis history
     user.profile.resumeAnalysisHistory.unshift({
       fileName: file.originalname,
-      fileUrl: `/uploads/resumes/${file.filename}`,
+
       jobDescription: jobDescription || "",
       jobTitle: jobTitle || "",
       jobId: jobId || null,
+
       score: analysis.score,
       atsScore: analysis.atsScore,
+
       analysis: analysis,
-      extractedText: resumeText.substring(0, 5000), // Store first 5000 chars for reference
+
+      extractedText: resumeText.substring(0, 5000),
+
       createdAt: new Date(),
     });
 
@@ -97,22 +87,24 @@ exports.analyzeResume = async (req, res) => {
     return res.json({
       success: true,
       analysis,
+
       historyId: user.profile.resumeAnalysisHistory[0]._id,
+
       meta: {
         resumeLength: resumeText.length,
         jobDescriptionLength: (jobDescription || "").length,
+
         extractedAt: new Date().toISOString(),
+
         fileName: file.originalname,
       },
     });
   } catch (err) {
     console.error("Resume analysis error:", err);
-    cleanupFile(filePath);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: err.message || "Analysis failed. Please try again.",
-      error: process.env.NODE_ENV === "development" ? err.stack : undefined,
+      message: err.message || "Analysis failed",
     });
   }
 };
@@ -307,17 +299,6 @@ exports.deleteAnalysis = async (req, res) => {
     });
   }
 };
-
-// Helper functions
-function cleanupFile(filePath) {
-  if (filePath && fs.existsSync(filePath)) {
-    try {
-      fs.unlinkSync(filePath);
-    } catch (err) {
-      console.error("File cleanup error:", err);
-    }
-  }
-}
 
 function compareSections(sections1 = {}, sections2 = {}) {
   const comparison = {};

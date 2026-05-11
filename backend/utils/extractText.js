@@ -4,15 +4,20 @@ const mammoth = require("mammoth");
 
 const isDevelopment = process.env.NODE_ENV === "development";
 
-exports.extractText = async (filePath, mimeType) => {
+exports.extractText = async (fileInput, mimeType) => {
   try {
     if (isDevelopment) {
-      console.log("Extracting text from:", filePath);
+      console.log(
+        "Extracting text from:",
+        Buffer.isBuffer(fileInput) ? "uploaded buffer" : fileInput,
+      );
       console.log("MIME type:", mimeType);
     }
 
     if (mimeType === "application/pdf") {
-      const buffer = fs.readFileSync(filePath);
+      const buffer = Buffer.isBuffer(fileInput)
+        ? fileInput
+        : fs.readFileSync(fileInput);
       if (isDevelopment) {
         console.log("PDF buffer size:", buffer.length);
       }
@@ -36,7 +41,9 @@ exports.extractText = async (filePath, mimeType) => {
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
       mimeType === "application/msword"
     ) {
-      const result = await mammoth.extractRawText({ path: filePath });
+      const result = Buffer.isBuffer(fileInput)
+        ? await mammoth.extractRawText({ buffer: fileInput })
+        : await mammoth.extractRawText({ path: fileInput });
       if (isDevelopment) {
         console.log("DOCX text extracted, length:", result.value?.length || 0);
       }
@@ -51,7 +58,9 @@ exports.extractText = async (filePath, mimeType) => {
     }
 
     if (mimeType === "text/plain") {
-      const text = fs.readFileSync(filePath, "utf-8");
+      const text = Buffer.isBuffer(fileInput)
+        ? fileInput.toString("utf-8")
+        : fs.readFileSync(fileInput, "utf-8");
       if (isDevelopment) {
         console.log("TXT text extracted, length:", text?.length || 0);
       }

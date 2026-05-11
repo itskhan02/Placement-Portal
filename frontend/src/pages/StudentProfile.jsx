@@ -17,10 +17,11 @@ import {
   Mail,
   User,
   Calendar,
-  Award,
+  ArrowRight,
+  
 } from "lucide-react";
 import api from "../utils/api";
-import { ASSET_BASE_URL } from "../utils/config";
+import { ASSET_BASE_URL, getAssetUrl } from "../utils/config";
 
 const StudentProfile = () => {
   const [user, setUser] = useState(null);
@@ -51,6 +52,7 @@ const StudentProfile = () => {
     duration: "",
   });
   const [resumeLoading, setResumeLoading] = useState(false);
+  const [previewResume, setPreviewResume] = useState(false);
 
   useEffect(() => {
     fetchProfile();
@@ -355,6 +357,9 @@ const StudentProfile = () => {
   }
 
   const profilePicUrl = getProfilePictureUrl();
+  const resumeUrl = user?.profile?.resume?.fileUrl?.startsWith("http")
+    ? user.profile.resume.fileUrl
+    : getAssetUrl(user?.profile?.resume?.fileUrl || "");
 
   return (
     <Layout role="student">
@@ -365,7 +370,7 @@ const StudentProfile = () => {
             <span>{error}</span>
           </div>
         )}
-        
+
         {/* Profile Header */}
         <div className="bg-gradient-to-r from-blue-600 to-cyan-500 p-6 rounded-xl text-white flex justify-between">
           <div className="flex gap-5 items-center">
@@ -776,14 +781,15 @@ const StudentProfile = () => {
                       </p>
                     </div>
                   </div>
-                  <a
-                    href={`${ASSET_BASE_URL || ""}${user.profile.resume.fileUrl}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1"
+                  <button
+                    onClick={() => setPreviewResume(true)}
+                    className="group flex items-center  content-center gap-2 px-4 py-2  text-blue-700 rounded-xl hover:text-blue-500 transition-all duration-300  hover:-translate-y-0.5 text-base font-medium"
                   >
-                    View Resume →
-                  </a>
+                    Preview Resume
+                    <ArrowRight
+                      size={14}
+                    />
+                  </button>
                 </div>
               </div>
             ) : (
@@ -846,6 +852,54 @@ const StudentProfile = () => {
           </div>
         )}
       </div>
+
+      {/* Resume Preview Modal */}
+      {previewResume && user?.profile?.resume?.fileUrl && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-5xl h-[90vh] shadow-2xl flex flex-col overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-gray-50">
+              <div className="flex items-center gap-2">
+                <FileText size={20} className="text-blue-600" />
+                <h3 className="font-semibold text-gray-900">Resume Preview</h3>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {/* Download */}
+                <a
+                  href={resumeUrl}
+                  download
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium"
+                >
+                  <Upload size={14} className="rotate-180" />
+                  Download
+                </a>
+
+                {/* Close */}
+                <button
+                  onClick={() => setPreviewResume(false)}
+                  className="p-2 hover:bg-gray-200 text-gray-500 rounded-lg transition"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+
+            {/* PDF Preview */}
+            <div className="flex-1 bg-gray-100">
+              <iframe
+                src={`https://docs.google.com/gview?url=${encodeURIComponent(
+                  resumeUrl,
+                )}&embedded=true`}
+                className="w-full h-full border-none"
+                title="Resume Preview"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 };
