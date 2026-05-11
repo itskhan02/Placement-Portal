@@ -1,5 +1,7 @@
-export const API_BASE_URL =
+const rawApiUrl =
   import.meta.env.VITE_API_URL || "https://smart-place-nhnl.onrender.com/api";
+
+export const API_BASE_URL = rawApiUrl.replace(/\/$/, "");
 
 export const SOCKET_URL =
   import.meta.env.VITE_SOCKET_URL || "https://smart-place-nhnl.onrender.com";
