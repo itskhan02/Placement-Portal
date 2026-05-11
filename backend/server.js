@@ -32,7 +32,9 @@ const reportRoutes = require("./routes/reportroutes");
 
 const app = express();
 const server = http.createServer(app);
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+const FRONTEND_URL =
+  process.env.FRONTEND_URL ||
+  "https://smart-placement-portal-1-u1zy.onrender.com";
 const isDevelopment = process.env.NODE_ENV === "development";
 
 const io = new Server(server, {
