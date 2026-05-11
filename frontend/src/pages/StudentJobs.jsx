@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import Layout from "../components/Layout";
 import api from "../utils/api";
-import { ASSET_BASE_URL } from "../utils/config";
+import { getAssetUrl } from "../utils/config";
 import {  Briefcase, BriefcaseBusiness, IndianRupee, MapPin, Search, Filter, X } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 
@@ -19,14 +19,14 @@ const StudentJobs = () => {
 
   const getCompanyName = (company) => company?.name || company || "Company";
 
-  const getCompanyLogoUrl = (company) => {
-    if (!company?.logo) return null;
-    const logo = company.logo;
-    if (logo.startsWith("http")) return logo;
-    const assetBaseUrl = ASSET_BASE_URL || "";
-    if (logo.startsWith("/uploads")) return `${assetBaseUrl}${logo}`;
-    return `${assetBaseUrl}/uploads/company/${logo}`;
-  };
+  // const getCompanyLogoUrl = (company) => {
+  //   if (!company?.logo) return null;
+  //   const logo = company.logo;
+  //   if (logo.startsWith("http")) return logo;
+  //   const assetBaseUrl = ASSET_BASE_URL || "";
+  //   if (logo.startsWith("/uploads")) return `${assetBaseUrl}${logo}`;
+  //   return `${assetBaseUrl}/uploads/company/${logo}`;
+  // };
 
 
   useEffect(() => {
@@ -123,7 +123,10 @@ const StudentJobs = () => {
                 Search Jobs
               </label>
               <div className="relative">
-                <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <Search
+                  size={18}
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                />
                 <input
                   type="text"
                   placeholder="Search by job title or company..."
@@ -177,7 +180,9 @@ const StudentJobs = () => {
           {/* sort options */}
           <div className="flex items-center justify-between pt-2 border-t">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700">Sort by:</span>
+              <span className="text-sm font-medium text-gray-700">
+                Sort by:
+              </span>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
@@ -190,7 +195,7 @@ const StudentJobs = () => {
               </select>
             </div>
             <div className="text-sm text-gray-500">
-              {jobs.length} job{jobs.length !== 1 ? 's' : ''} found
+              {jobs.length} job{jobs.length !== 1 ? "s" : ""} found
             </div>
           </div>
         </div>
@@ -211,13 +216,13 @@ const StudentJobs = () => {
               >
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
-                    {getCompanyLogoUrl(job.company) ? (
+                    {job.company?.logo ? (
                       <img
-                        src={getCompanyLogoUrl(job.company)}
+                        src={getAssetUrl(job.company.logo)}
                         alt={getCompanyName(job.company)}
                         className="w-10 h-10 rounded-lg object-cover border"
                         onError={(e) => {
-                          e.target.style.display = 'none';
+                          e.target.style.display = "none";
                         }}
                       />
                     ) : (
@@ -225,6 +230,7 @@ const StudentJobs = () => {
                         {getCompanyName(job.company).charAt(0).toUpperCase()}
                       </div>
                     )}
+
                     <div>
                       <h3
                         onClick={() => navigate(`/student/job/${job._id}`)}
@@ -232,6 +238,7 @@ const StudentJobs = () => {
                       >
                         {job.title}
                       </h3>
+
                       <p className="text-gray-600 font-medium">
                         {getCompanyName(job.company)}
                       </p>

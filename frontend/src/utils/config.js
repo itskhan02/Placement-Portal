@@ -12,12 +12,11 @@ export const ASSET_BASE_URL =
 export const getAssetUrl = (assetPath) => {
   if (!assetPath) return "";
 
-  // Cloudinary/external URL
   if (assetPath.startsWith("http://") || assetPath.startsWith("https://")) {
     return assetPath;
   }
 
-  // Local uploads
+
   if (assetPath.startsWith("/")) {
     return `${ASSET_BASE_URL}${assetPath}`;
   }
