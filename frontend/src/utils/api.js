@@ -79,6 +79,9 @@ const api = axios.create({
   withCredentials: true,
 });
 
+axios.defaults.baseURL = API_BASE_URL;
+axios.defaults.withCredentials = true;
+
 api.interceptors.request.use(
   (config) => {
     const session = getStoredSession();
