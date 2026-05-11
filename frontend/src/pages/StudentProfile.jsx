@@ -674,7 +674,7 @@ const StudentProfile = () => {
               Work Experience
             </h2>
           </div>
-          <div className="p-6">
+          <div className="p-6"> 
             {experience.length > 0 ? (
               <div className="space-y-4">
                 {experience.map((exp, idx) => (
