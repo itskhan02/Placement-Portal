@@ -18,7 +18,7 @@ exports.analyzeResume = async (req, res) => {
 
     // Validate size
     if (file.size > 5 * 1024 * 1024) {
-      return res.status(400).json({
+      return res.status(400).json({ 
         success: false,
         message: "File size must be less than 5MB",
       });
