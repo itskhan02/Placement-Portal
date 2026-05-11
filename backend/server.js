@@ -33,8 +33,7 @@ const reportRoutes = require("./routes/reportroutes");
 const app = express();
 const server = http.createServer(app);
 const FRONTEND_URL =
-  process.env.FRONTEND_URL ||
-  "https://smart-placement-portal-1-u1zy.onrender.com";
+  process.env.FRONTEND_URL || "https://smart-place-nhnl.onrender.com";
 const isDevelopment = process.env.NODE_ENV === "development";
 
 const io = new Server(server, {
@@ -108,7 +107,7 @@ app.use("/api/report", reportRoutes);
 
 
 app.use(express.static(path.join(__dirname, "../frontend/dist")));
-app.get(/.*/, (req, res) => {
+app.get("/{*splat}", (req, res) => {
   res.sendFile(path.resolve(__dirname, "../frontend/dist/index.html"));
 });
 
