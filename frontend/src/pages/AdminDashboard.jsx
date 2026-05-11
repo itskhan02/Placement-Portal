@@ -19,8 +19,6 @@ import {
   MessageSquare,
   ArrowUp,
   ArrowDown,
-  Award,
-  ThumbsUp,
   TrendingUp as TrendingUpIcon,
   MapPin,
   Clock,
