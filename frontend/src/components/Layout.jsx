@@ -16,7 +16,7 @@ import {
 import { AiOutlineMenuFold, AiOutlineMenuUnfold } from "react-icons/ai";
 import { motion } from "framer-motion";
 import api from "../utils/api";
-import { API_BASE_URL, ASSET_BASE_URL } from "../utils/config";
+import { API_BASE_URL, ASSET_BASE_URL, getAssetUrl } from "../utils/config";
 import { useAuth } from "../context/AuthContext";
 import Notification from "./Notification";
 import { connectSocket, socket } from "../utils/socket";
@@ -161,22 +161,6 @@ const Layout = ({ role, children }) => {
         .slice(0, 2)
         .toUpperCase()
     : "U";
-
-  // const getProfilePictureUrl = () => {
-  //   const picture = user?.profile?.profilePicture || user?.profilePic;
-
-  //   if (!picture) return null;
-  //   if (picture.startsWith("http")) return picture;
-
-  //   const assetBaseUrl = ASSET_BASE_URL || API_BASE_URL?.replace(/\/api\/?$/, "");
-  //   if (!assetBaseUrl) return picture;
-
-  //   if (picture.startsWith("/")) {
-  //     return `${assetBaseUrl}${picture}`;
-  //   }
-
-  //   return `${assetBaseUrl}/uploads/profiles/${picture}`;
-  // };
 
   const profilePictureUrl = getAssetUrl(
     user?.profile?.profilePicture || user?.profilePic,

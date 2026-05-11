@@ -19,16 +19,6 @@ const StudentJobs = () => {
 
   const getCompanyName = (company) => company?.name || company || "Company";
 
-  // const getCompanyLogoUrl = (company) => {
-  //   if (!company?.logo) return null;
-  //   const logo = company.logo;
-  //   if (logo.startsWith("http")) return logo;
-  //   const assetBaseUrl = ASSET_BASE_URL || "";
-  //   if (logo.startsWith("/uploads")) return `${assetBaseUrl}${logo}`;
-  //   return `${assetBaseUrl}/uploads/company/${logo}`;
-  // };
-
-
   useEffect(() => {
     fetchJobs();
   }, [searchQuery, locationFilter, jobTypeFilter, sortBy]);

@@ -12,14 +12,20 @@ export const ASSET_BASE_URL =
 export const getAssetUrl = (assetPath) => {
   if (!assetPath) return "";
 
-  if (assetPath.startsWith("http://") || assetPath.startsWith("https://")) {
+  if (
+    assetPath.startsWith("http://") ||
+    assetPath.startsWith("https://")
+  ) {
     return assetPath;
   }
 
-
-  if (assetPath.startsWith("/")) {
+  if (assetPath.startsWith("/uploads")) {
     return `${ASSET_BASE_URL}${assetPath}`;
   }
 
-  return `${ASSET_BASE_URL}/${assetPath}`;
+  if (assetPath.startsWith("uploads/")) {
+    return `${ASSET_BASE_URL}/${assetPath}`;
+  }
+
+  return `${ASSET_BASE_URL}/uploads/${assetPath}`;
 };
