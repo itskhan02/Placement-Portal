@@ -21,13 +21,13 @@ import { useAuth } from "../context/AuthContext";
 import Notification from "./Notification";
 import { connectSocket, socket } from "../utils/socket";
 
-// admin 
+// admin
 const adminLinks = [
   { path: "/admin", name: "Dashboard", icon: LayoutDashboard },
   { path: "/admin/users", name: "Users", icon: Users },
   { path: "/admin/jobs", name: "Jobs", icon: Briefcase },
   { path: "/admin/applications", name: "Applications", icon: FileText },
-  { path: "/admin/reports", name: "Reports", icon: ShieldAlert},
+  { path: "/admin/reports", name: "Reports", icon: ShieldAlert },
 ];
 
 /* Student links */
@@ -51,6 +51,7 @@ const recruiterLinks = [
 const Layout = ({ role, children }) => {
   const MotionDiv = motion.div;
   const [collapsed, setCollapsed] = useState(false);
+  const [messageCount, setMessageCount] = useState(0);
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -71,6 +72,21 @@ const Layout = ({ role, children }) => {
     }
   };
 
+  const fetchUnreadMessages = async () => {
+    try {
+      const res = await api.get("/chat/contacts");
+
+      const total = (res.data.contacts || []).reduce(
+        (sum, user) => sum + (user.unreadCount || 0),
+        0,
+      );
+
+      setMessageCount(total);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     void fetchCount();
 
@@ -80,6 +96,12 @@ const Layout = ({ role, children }) => {
 
     socket.on("notification", () => {
       fetchCount();
+    });
+
+    fetchUnreadMessages();
+
+    socket.on("newMessage", () => {
+      fetchUnreadMessages();
     });
 
     return () => {
@@ -111,7 +133,12 @@ const Layout = ({ role, children }) => {
     return () => {
       isMounted = false;
     };
-  }, [updateAuthUser, user?._id, user?.profile?.profilePicture, user?.profilePic]);
+  }, [
+    updateAuthUser,
+    user?._id,
+    user?.profile?.profilePicture,
+    user?.profilePic,
+  ]);
 
   const handleMarkRead = () => {
     fetchCount();
@@ -149,9 +176,9 @@ const Layout = ({ role, children }) => {
   else if (role === "admin") links = adminLinks;
   else links = [];
 
- const isActive = (path) => {
-   return location.pathname === path;
- };
+  const isActive = (path) => {
+    return location.pathname === path;
+  };
 
   const initials = user?.name
     ? user.name
@@ -229,8 +256,18 @@ const Layout = ({ role, children }) => {
                   background: active ? "#3b82f6" : "transparent",
                 }}
               >
-                <Icon size={22} />
-                {!collapsed && <span>{link.name}</span>}
+                <div className="flex items-center gap-3 w-full">
+                  <Icon size={22} />
+                  {!collapsed && <span>{link.name}</span>}
+
+                  {!collapsed &&
+                    link.name === "Messages" &&
+                    messageCount > 0 && (
+                      <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center font-semibold">
+                        {messageCount > 99 ? "99+" : messageCount}
+                      </span>
+                    )}
+                </div>
               </Link>
             );
           })}

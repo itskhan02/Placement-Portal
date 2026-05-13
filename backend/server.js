@@ -13,7 +13,6 @@ const connectDB = require("./config/db");
 
 const _dirname = path.resolve();
 
-
 // Routes
 const jobroutes = require("./routes/jobroutes");
 const authroutes = require("./routes/authroutes");
@@ -28,7 +27,6 @@ const chatRoutes = require("./routes/chatroutes");
 const resumeRoutes = require("./routes/resumeroutes");
 const adminroutes = require("./routes/adminroutes");
 const reportRoutes = require("./routes/reportroutes");
-
 
 const app = express();
 const server = http.createServer(app);
@@ -78,7 +76,7 @@ app.use(
   cors({
     origin: FRONTEND_URL,
     credentials: true,
-  })
+  }),
 );
 app.use(express.json());
 
@@ -105,22 +103,19 @@ app.use("/api/resume", resumeRoutes);
 app.use("/api/admin", adminroutes);
 app.use("/api/report", reportRoutes);
 
-
 app.all(/\/api\/.*/, (req, res) => {
   console.warn(`[404] Unmatched API Route: ${req.method} ${req.originalUrl}`);
-  res.status(404).json({ 
+  res.status(404).json({
     error: "API route not found",
-    path: req.originalUrl 
+    path: req.originalUrl,
   });
 });
 
 app.use(express.static(path.join(__dirname, "../frontend/dist")));
 
-
 app.get(/.*/, (req, res) => {
   res.sendFile(path.resolve(__dirname, "../frontend/dist/index.html"));
 });
-
 
 app.use((req, res) => {
   res.status(404).json({
@@ -128,23 +123,24 @@ app.use((req, res) => {
   });
 });
 
-
 app.use((err, req, res, next) => {
   console.error("Error:", err);
-  
-  if (err.name === 'MulterError') {
-    if (err.code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({ error: 'File too large. Maximum size is 5MB.' });
+
+  if (err.name === "MulterError") {
+    if (err.code === "LIMIT_FILE_SIZE") {
+      return res
+        .status(400)
+        .json({ error: "File too large. Maximum size is 5MB." });
     }
     return res.status(400).json({ error: err.message });
   }
-  
-  if (err.message && err.message.includes('Invalid file type')) {
+
+  if (err.message && err.message.includes("Invalid file type")) {
     return res.status(400).json({ error: err.message });
   }
-  
-  res.status(err.status || 500).json({ 
-    error: err.message || 'Internal server error' 
+
+  res.status(err.status || 500).json({
+    error: err.message || "Internal server error",
   });
 });
 

@@ -1,17 +1,38 @@
 const Message = require("../models/Message");
-const { getAllowedChatContacts, getChatAccess } = require("../services/chatAccessService");
+const {
+  getAllowedChatContacts,
+  getChatAccess,
+} = require("../services/chatAccessService");
 
 exports.getContacts = async (req, res) => {
   try {
     const contacts = await getAllowedChatContacts(req.user);
 
-    res.json({ contacts, success: true });
+    const contactsWithUnread = await Promise.all(
+      contacts.map(async (contact) => {
+        const unreadCount = await Message.countDocuments({
+          sender: contact._id,
+          receiver: req.user._id,
+          isRead: false,
+        });
+
+        return {
+          ...contact,
+          unreadCount,
+        };
+      }),
+    );
+
+    res.json({
+      contacts: contactsWithUnread,
+      success: true,
+    });
   } catch (err) {
     res.status(500).json({ message: err.message, success: false });
   }
 };
 
-// get messages 
+// get messages
 exports.getMessages = async (req, res) => {
   try {
     const { receiverId } = req.params;
@@ -21,6 +42,17 @@ exports.getMessages = async (req, res) => {
       return res.status(403).json({ message: access.reason, success: false });
     }
 
+    await Message.updateMany(
+      {
+        sender: receiverId,
+        receiver: req.user._id,
+        isRead: false,
+      },
+      {
+        $set: { isRead: true },
+      },
+    );
+
     const messages = await Message.find({
       $or: [
         { sender: req.user._id, receiver: receiverId },
@@ -29,7 +61,6 @@ exports.getMessages = async (req, res) => {
     }).sort({ createdAt: 1 });
 
     res.json({ messages, success: true });
-    
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

@@ -28,7 +28,7 @@ const getAllowedChatContacts = async (user) => {
       if (seenRecruiters.has(recruiterId)) continue;
 
       const recruiter = await User.findById(recruiterId).select(
-        "name email role profile.profilePicture"
+        "name email role profile.profilePicture",
       );
 
       if (!recruiter) continue;
@@ -51,7 +51,9 @@ const getAllowedChatContacts = async (user) => {
   }
 
   if (user.role === "recruiter") {
-    const recruiterJobIds = await Job.find({ createdBy: user._id }).distinct("_id");
+    const recruiterJobIds = await Job.find({ createdBy: user._id }).distinct(
+      "_id",
+    );
 
     if (!recruiterJobIds.length) {
       return [];
@@ -100,7 +102,7 @@ const getChatAccess = async (currentUser, otherUserId) => {
   }
 
   const otherUser = await User.findById(otherUserId).select(
-    "name email role profile.profilePicture"
+    "name email role profile.profilePicture",
   );
 
   if (!otherUser) {
@@ -110,7 +112,8 @@ const getChatAccess = async (currentUser, otherUserId) => {
   if (otherUser.role === currentUser.role || otherUser.role === "admin") {
     return {
       allowed: false,
-      reason: "Messages are only allowed between matched students and recruiters",
+      reason:
+        "Messages are only allowed between matched students and recruiters",
     };
   }
 
@@ -119,12 +122,15 @@ const getChatAccess = async (currentUser, otherUserId) => {
   const studentId =
     currentUser.role === "student" ? currentUser._id : otherUser._id;
 
-  const recruiterJobIds = await Job.find({ createdBy: recruiterId }).distinct("_id");
+  const recruiterJobIds = await Job.find({ createdBy: recruiterId }).distinct(
+    "_id",
+  );
 
   if (!recruiterJobIds.length) {
     return {
       allowed: false,
-      reason: "Messaging is unlocked only after a recruiter updates an application status",
+      reason:
+        "Messaging is unlocked only after a recruiter updates an application status",
     };
   }
 
@@ -139,7 +145,8 @@ const getChatAccess = async (currentUser, otherUserId) => {
   if (!application || !canStatusAccessChat(application.status)) {
     return {
       allowed: false,
-      reason: "Messaging is unlocked only after the application status moves beyond pending",
+      reason:
+        "Messaging is unlocked only after the application status moves beyond pending",
     };
   }
 

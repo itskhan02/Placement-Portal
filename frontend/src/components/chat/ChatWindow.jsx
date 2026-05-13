@@ -206,7 +206,10 @@ const ChatWindow = ({ selectedUser, onBack }) => {
         <div className="flex items-center justify-between gap-2 min-w-0">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <button
-              onClick={onBack}
+              onClick={() => {
+                setShowProfile(false);
+                onBack();
+              }}
               className="md:hidden p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0"
             >
               <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
@@ -233,18 +236,26 @@ const ChatWindow = ({ selectedUser, onBack }) => {
                   className={`inline-flex items-center gap-0.5 sm:gap-1.5 px-1.5 sm:px-2.5 py-0.5 rounded-full text-xs font-medium border ${getRoleColor(selectedUser.role)} flex-shrink-0`}
                 >
                   {getRoleIcon(selectedUser.role)}
-                  <span className="hidden sm:inline">{selectedUser.role === "recruiter" ? "Recruiter" : "Student"}</span>
+                  <span className="hidden sm:inline">
+                    {selectedUser.role === "recruiter"
+                      ? "Recruiter"
+                      : "Student"}
+                  </span>
                 </span>
                 {selectedUser.company && (
                   <span className="text-xs text-gray-500 flex items-center gap-0.5 truncate">
                     <Briefcase className="h-3 w-3 flex-shrink-0" />
-                    <span className="truncate hidden sm:inline">{selectedUser.company}</span>
+                    <span className="truncate hidden sm:inline">
+                      {selectedUser.company}
+                    </span>
                   </span>
                 )}
                 {selectedUser.location && (
                   <span className="text-xs text-gray-500 flex items-center gap-0.5 truncate">
                     <MapPin className="h-3 w-3 flex-shrink-0" />
-                    <span className="truncate hidden sm:inline">{selectedUser.location}</span>
+                    <span className="truncate hidden sm:inline">
+                      {selectedUser.location}
+                    </span>
                   </span>
                 )}
               </div>
@@ -292,7 +303,9 @@ const ChatWindow = ({ selectedUser, onBack }) => {
                 </div>
               )}
               {selectedUser.bio && (
-                <p className="text-xs sm:text-sm text-gray-600 mt-2 line-clamp-2">{selectedUser.bio}</p>
+                <p className="text-xs sm:text-sm text-gray-600 mt-2 line-clamp-2">
+                  {selectedUser.bio}
+                </p>
               )}
             </div>
             <div className="p-2 sm:p-3 space-y-1">
@@ -328,7 +341,9 @@ const ChatWindow = ({ selectedUser, onBack }) => {
             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-full flex items-center justify-center mb-3 sm:mb-4 shadow-sm">
               <MessageCircle className="h-8 w-8 sm:h-10 sm:w-10 text-blue-500" />
             </div>
-            <p className="text-gray-600 font-medium text-sm sm:text-base">No messages yet</p>
+            <p className="text-gray-600 font-medium text-sm sm:text-base">
+              No messages yet
+            </p>
             <p className="text-xs sm:text-sm text-gray-400 text-center mt-2">
               Start the conversation with{" "}
               <span className="font-semibold text-gray-500">

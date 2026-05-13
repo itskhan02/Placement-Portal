@@ -7,6 +7,8 @@ import { Send } from "lucide-react";
 const MessageInput = ({ receiver, onSent, disabled = false }) => {
   const [text, setText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+
   const typingTimeoutRef = useRef(null);
   const { user } = useAuth();
 
@@ -19,10 +21,13 @@ const MessageInput = ({ receiver, onSent, disabled = false }) => {
   }, []);
 
   const sendMessage = async () => {
-    if (!text.trim() || disabled) return;
+    if (!text.trim() || disabled || isSending) return;
 
     try {
+      setIsSending(true);
+
       const trimmedText = text.trim();
+
       const res = await api.post("/chat", {
         receiver,
         text: trimmedText,
@@ -39,12 +44,15 @@ const MessageInput = ({ receiver, onSent, disabled = false }) => {
 
       setText("");
       setIsTyping(false);
+
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
         typingTimeoutRef.current = null;
       }
     } catch (error) {
       console.error("Failed to send message:", error);
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -132,9 +140,9 @@ const MessageInput = ({ receiver, onSent, disabled = false }) => {
 
         <button
           onClick={sendMessage}
-          disabled={!text.trim() || disabled}
+          disabled={!text.trim() || disabled || isSending}
           className={`flex-shrink-0 px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center gap-1 sm:gap-2 shadow-sm ${
-            !text.trim() || disabled
+            !text.trim() || disabled || isSending
               ? "bg-gray-100 text-gray-400 cursor-not-allowed"
               : "bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:shadow-lg hover:scale-105 active:scale-95"
           }`}
