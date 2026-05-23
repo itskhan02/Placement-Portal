@@ -114,7 +114,6 @@ const StudentProfile = () => {
   };
 
   const handleCancelEdit = () => {
-    // Reset form data to original values
     setFormData({
       name: user?.name || "",
       email: user?.email || "",
@@ -331,6 +330,32 @@ const StudentProfile = () => {
       clearMessages();
     } finally {
       setResumeLoading(false);
+    }
+  };
+
+  const handleResumeDownload = async () => {
+    try {
+      const response = await fetch(resumeUrl);
+
+      const blob = await response.blob();
+
+      const blobUrl = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+
+      link.href = blobUrl;
+
+      link.download = user?.profile?.resume?.fileName || "Resume.pdf";
+
+      document.body.appendChild(link);
+
+      link.click();
+
+      document.body.removeChild(link);
+
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error("Resume download failed:", err);
     }
   };
 
@@ -778,9 +803,7 @@ const StudentProfile = () => {
                     className="group flex items-center  content-center gap-2 px-4 py-2  text-blue-700 rounded-xl hover:text-blue-500 transition-all duration-300  hover:-translate-y-0.5 text-base font-medium"
                   >
                     Preview Resume
-                    <ArrowRight
-                      size={14}
-                    />
+                    <ArrowRight size={14} />
                   </button>
                 </div>
               </div>
@@ -857,17 +880,13 @@ const StudentProfile = () => {
               </div>
 
               <div className="flex items-center gap-2">
-                {/* Download */}
-                <a
-                  href={resumeUrl}
-                  download
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  onClick={handleResumeDownload}
                   className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium"
                 >
                   <Upload size={14} className="rotate-180" />
                   Download
-                </a>
+                </button>
 
                 {/* Close */}
                 <button

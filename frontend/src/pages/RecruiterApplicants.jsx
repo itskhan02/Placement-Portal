@@ -13,12 +13,15 @@ import {
   Clock,
   UserCheck,
   UserX,
+  X,
 } from "lucide-react";
 
 const RecruiterApplicants = () => {
   const [apps, setApps] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
+  const [previewResume, setPreviewResume] = useState(null);
+
   const navigate = useNavigate();
 
   const fetchApplicants = async () => {
@@ -63,6 +66,32 @@ const RecruiterApplicants = () => {
         return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const handleResumeDownload = async (url, fileName) => {
+    try {
+      const response = await fetch(url);
+
+      const blob = await response.blob();
+
+      const blobUrl = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+
+      link.href = blobUrl;
+      link.download = fileName;
+
+      document.body.appendChild(link);
+
+      link.click();
+
+      document.body.removeChild(link);
+
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error("Download failed:", err);
+      toast.error("Failed to download resume");
     }
   };
 
@@ -126,28 +155,75 @@ const RecruiterApplicants = () => {
           </div>
         ) : (
           <div className="grid gap-4">
-            {apps.map((app) => (
-              <div
-                key={app._id}
-                className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200 overflow-hidden"
-              >
-                <div className="p-6">
-                  <div className="flex flex-col md:flex-row justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="font-semibold text-xl text-gray-900">
-                            {app.applicant?.name || "Unknown Applicant"}
-                          </h3>
-                          <p className="text-gray-500 text-sm mt-1">
-                            {app.applicant?.email || "No email provided"}
-                          </p>
+            {apps.map((app) => {
+              const resumeUrl =
+                app.applicant?.profile?.resume?.fileUrl?.startsWith("http")
+                  ? app.applicant.profile.resume.fileUrl
+                  : app.applicant?.profile?.resume?.fileUrl
+                    ? getAssetUrl(app.applicant.profile.resume.fileUrl)
+                    : "";
+
+              return (
+                <div
+                  key={app._id}
+                  className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200 overflow-hidden"
+                >
+                  <div className="p-6">
+                    <div className="flex flex-col md:flex-row justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h3 className="font-semibold text-xl text-gray-900">
+                              {app.applicant?.name || "Unknown Applicant"}
+                            </h3>
+                            <p className="text-gray-500 text-sm mt-1">
+                              {app.applicant?.email || "No email provided"}
+                            </p>
+                          </div>
+
+                          {/* Status Badge */}
+                          <div className="md:hidden">
+                            <span
+                              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                                app.status,
+                              )}`}
+                            >
+                              {getStatusIcon(app.status)}
+                              {app.status.charAt(0).toUpperCase() +
+                                app.status.slice(1)}
+                            </span>
+                          </div>
                         </div>
 
-                        {/* Status Badge */}
-                        <div className="md:hidden">
+                        <div className="mt-3 flex flex-wrap gap-3">
+                          <div className="bg-gray-50 px-3 py-1.5 rounded-lg">
+                            <span className="text-xs text-gray-500">
+                              Applied for
+                            </span>
+                            <p className="text-sm font-medium text-gray-900">
+                              {app.job?.title || "Unknown Job"}
+                            </p>
+                          </div>
+
+                          {app.appliedAt && (
+                            <div className="bg-gray-50 px-3 py-1.5 rounded-lg">
+                              <span className="text-xs text-gray-500">
+                                Applied on
+                              </span>
+                              <p className="text-sm font-medium text-gray-900">
+                                {new Date(app.appliedAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* RIGHT SECTION - Actions */}
+                      <div className="flex flex-col items-end gap-3">
+                        {/* Desktop Status Badge */}
+                        <div className="hidden md:block">
                           <span
-                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium ${getStatusColor(
                               app.status,
                             )}`}
                           >
@@ -156,138 +232,156 @@ const RecruiterApplicants = () => {
                               app.status.slice(1)}
                           </span>
                         </div>
-                      </div>
 
-                      <div className="mt-3 flex flex-wrap gap-3">
-                        <div className="bg-gray-50 px-3 py-1.5 rounded-lg">
-                          <span className="text-xs text-gray-500">
-                            Applied for
-                          </span>
-                          <p className="text-sm font-medium text-gray-900">
-                            {app.job?.title || "Unknown Job"}
-                          </p>
-                        </div>
-
-                        {app.appliedAt && (
-                          <div className="bg-gray-50 px-3 py-1.5 rounded-lg">
-                            <span className="text-xs text-gray-500">
-                              Applied on
-                            </span>
-                            <p className="text-sm font-medium text-gray-900">
-                              {new Date(app.appliedAt).toLocaleDateString()}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* RIGHT SECTION - Actions */}
-                    <div className="flex flex-col items-end gap-3">
-                      {/* Desktop Status Badge */}
-                      <div className="hidden md:block">
-                        <span
-                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium ${getStatusColor(
-                            app.status,
-                          )}`}
-                        >
-                          {getStatusIcon(app.status)}
-                          {app.status.charAt(0).toUpperCase() +
-                            app.status.slice(1)}
-                        </span>
-                      </div>
-
-                      {/* Action Buttons */}
-                      <div className="flex gap-2 flex-wrap justify-end">
-                        {/* Resume Button */}
-                        {app.applicant?.profile?.resume?.fileUrl ? (
-                          <a
-                            href={getAssetUrl(app.applicant.profile.resume.fileUrl)}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors duration-200 text-sm font-medium border border-blue-200"
-                          >
-                            <FileText size={16} />
-                            View Resume
-                          </a>
-                        ) : (
-                          <button
-                            disabled
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-50 text-gray-400 rounded-lg text-sm font-medium cursor-not-allowed"
-                          >
-                            <FileText size={16} />
-                            No Resume
-                          </button>
-                        )}
-
-                        {/* Status Dropdown */}
-                        <select
-                          value={app.status}
-                          onChange={(e) =>
-                            updateStatus(app._id, e.target.value)
-                          }
-                          disabled={updatingId === app._id}
-                          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white cursor-pointer hover:bg-gray-50 transition-colors"
-                        >
-                          <option value="pending">Pending</option>
-                          <option value="reviewing">Reviewing</option>
-                          <option value="accepted">Accepted</option>
-                          <option value="rejected">Rejected</option>
-                        </select>
-
-                        {/* Quick Action Buttons */}
-                        <button
-                          onClick={() => updateStatus(app._id, "accepted")}
-                          disabled={
-                            updatingId === app._id || app.status === "accepted"
-                          }
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 text-sm font-medium shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {updatingId === app._id ? (
-                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                        {/* Action Buttons */}
+                        <div className="flex gap-2 flex-wrap justify-end">
+                          {/* Resume Button */}
+                          {app.applicant?.profile?.resume?.fileUrl ? (
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() =>
+                                  setPreviewResume({
+                                    url: resumeUrl,
+                                    fileName:
+                                      app.applicant?.profile?.resume
+                                        ?.fileName || "Resume",
+                                  })
+                                }
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors duration-200 text-sm font-medium border border-blue-200"
+                              >
+                                <FileText size={16} />
+                                View Resume
+                              </button>
+                            </div>
                           ) : (
-                            <CheckCircle size={16} />
+                            <button
+                              disabled
+                              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-50 text-gray-400 rounded-lg text-sm font-medium cursor-not-allowed"
+                            >
+                              <FileText size={16} />
+                              No Resume
+                            </button>
                           )}
-                          Accept
-                        </button>
 
-                        <button
-                          onClick={() => updateStatus(app._id, "rejected")}
-                          disabled={
-                            updatingId === app._id || app.status === "rejected"
-                          }
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 text-sm font-medium shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {updatingId === app._id ? (
-                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                          ) : (
-                            <UserX size={16} />
-                          )}
-                          Reject
-                        </button>
-
-                        {/* Message Button */}
-                        {app.canMessage && app.applicant?._id && (
-                          <button
-                            onClick={() =>
-                              navigate(
-                                `/recruiter/messages?user=${app.applicant._id}`,
-                              )
+                          {/* Status Dropdown */}
+                          <select
+                            value={app.status}
+                            onChange={(e) =>
+                              updateStatus(app._id, e.target.value)
                             }
-                            className="inline-flex items-center gap-2 p-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-lg hover:from-indigo-600 hover:to-purple-600 transition-all duration-200 shadow-sm hover:shadow-md"
-                            title="Send Message"
+                            disabled={updatingId === app._id}
+                            className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white cursor-pointer hover:bg-gray-50 transition-colors"
                           >
-                            <MessageCircle size={20} />
+                            <option value="pending">Pending</option>
+                            <option value="reviewing">Reviewing</option>
+                            <option value="accepted">Accepted</option>
+                            <option value="rejected">Rejected</option>
+                          </select>
+
+                          {/* Quick Action Buttons */}
+                          <button
+                            onClick={() => updateStatus(app._id, "accepted")}
+                            disabled={
+                              updatingId === app._id ||
+                              app.status === "accepted"
+                            }
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 text-sm font-medium shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {updatingId === app._id ? (
+                              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                            ) : (
+                              <CheckCircle size={16} />
+                            )}
+                            Accept
                           </button>
-                        )}
+
+                          <button
+                            onClick={() => updateStatus(app._id, "rejected")}
+                            disabled={
+                              updatingId === app._id ||
+                              app.status === "rejected"
+                            }
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 text-sm font-medium shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {updatingId === app._id ? (
+                              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                            ) : (
+                              <UserX size={16} />
+                            )}
+                            Reject
+                          </button>
+
+                          {/* Message Button */}
+                          {app.canMessage && app.applicant?._id && (
+                            <button
+                              onClick={() =>
+                                navigate(
+                                  `/recruiter/messages?user=${app.applicant._id}`,
+                                )
+                              }
+                              className="inline-flex items-center gap-2 p-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-lg hover:from-indigo-600 hover:to-purple-600 transition-all duration-200 shadow-sm hover:shadow-md"
+                              title="Send Message"
+                            >
+                              <MessageCircle size={20} />
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
+      {previewResume && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-5xl h-[90vh] shadow-2xl flex flex-col overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-gray-50">
+              <div className="flex items-center gap-2">
+                <FileText size={20} className="text-blue-600" />
+                <h3 className="font-semibold text-gray-900">
+                  {previewResume.fileName}
+                </h3>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() =>
+                    handleResumeDownload(
+                      previewResume.url,
+                      previewResume.fileName,
+                    )
+                  }
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium"
+                >
+                  Download
+                </button>
+
+                <button
+                  onClick={() => setPreviewResume(null)}
+                  className="p-2 hover:bg-gray-200 text-gray-500 rounded-lg transition"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+
+            {/* Resume Preview */}
+            <div className="flex-1 bg-gray-100">
+              <iframe
+                src={`https://docs.google.com/gview?url=${encodeURIComponent(
+                  previewResume.url,
+                )}&embedded=true`}
+                className="w-full h-full border-none"
+                title="Resume Preview"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 };
