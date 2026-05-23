@@ -36,74 +36,80 @@ const GROQ_MODELS = [
 let lastSuccessfulProvider = null;
 
 // generate prompt
-function buildPrompt(resumeText, jobDescription) {
-  const hasJobDescription =
-    jobDescription && jobDescription.trim().length >= 20;
+function buildPrompt(resumeText, jobDescription = "") {
+  return `
+You are a senior ATS recruiter and resume evaluator.
 
-  return `You are an expert ATS (Applicant Tracking System) resume analyzer. Analyze this resume${hasJobDescription ? " against the job description" : ""}.
+Analyze the following resume deeply and realistically.
 
-RESUME TEXT:
-"""
-${resumeText.substring(0, 8000)}
-"""
+IMPORTANT RULES:
+- Do NOT give generic responses
+- Do NOT repeat same feedback
+- Score based on actual quality
+- Different resumes MUST get different scores
+- Weak resumes should score 30-55
+- Average resumes should score 55-75
+- Excellent resumes should score 75-95
+- Be strict about ATS formatting
+- Only mention skills actually found
+- Give highly actionable improvements
+- Same resume should produce nearly identical scores
+- Avoid random scoring variations
+- Scoring should remain consistent across repeated analyses
 
-${
-  hasJobDescription
-    ? `JOB DESCRIPTION:
-"""
-${jobDescription.substring(0, 3000)}
-"""`
-    : "No job description. Give general resume improvement advice."
-}
+RESUME:
+${resumeText}
 
-Return ONLY a valid JSON object with this structure:
+${jobDescription ? `JOB DESCRIPTION:\n${jobDescription}` : ""}
+
+Return ONLY valid JSON.
+
 {
-  "score": 65,
-  "atsScore": 60,
-  "summary": "2-3 sentence professional analysis",
-  "strengths": ["specific strength 1", "specific strength 2", "specific strength 3"],
-  "weaknesses": ["specific weakness 1", "specific weakness 2"],
-  "improvements": [
-    {"text": "actionable improvement", "priority": "high", "category": "keywords", "impact": "impact description"}
-  ],
-  "detectedSkills": ["skill found in resume", "another skill"],
-  "missingKeywords": ["important missing keyword", "another keyword"],
-  "sectionScores": {
-    "atsCompatibility": 50,
-    "skills": 50,
-    "experience": 50,
-    "education": 50,
-    "formatting": 50,
-    "impact": 40,
-    "keywords": 40
-  },
-  "detailedFeedback": {
-    "skillsFeedback": "specific skills feedback",
-    "experienceFeedback": "specific experience feedback",
-    "educationFeedback": "specific education feedback",
-    "formattingFeedback": "specific formatting feedback",
-    "keywordFeedback": "specific keyword feedback"
-  },
-  "actionPlan": [
-    {"step": 1, "action": "what to do", "reason": "why it matters", "effort": "medium", "impact": "high"}
-  ],
-  "matchAnalysis": {
-    "technicalSkillsMatch": 50,
-    "softSkillsMatch": 50,
-    "experienceLevelMatch": 50,
-    "educationMatch": 50,
-    "overallFit": 50
-  },
-  "atsTips": ["ATS tip 1", "ATS tip 2", "ATS tip 3"],
-  "formatIssues": ["formatting issue found"],
-  "recommendedFormats": ["format suggestion"]
-}
+  "score": number,
+  "atsScore": number,
+  "summary": "detailed professional summary",
 
-RULES:
-- Be HONEST. Score realistically (most resumes score 40-70).
-- Only list skills ACTUALLY in the resume text.
-- Give SPECIFIC, ACTIONABLE feedback.
-- If text is not a professional resume, score below 20.`;
+  "strengths": [
+    "strength 1",
+    "strength 2"
+  ],
+
+  "weaknesses": [
+    "weakness 1",
+    "weakness 2"
+  ],
+
+  "missingKeywords": [
+    "keyword 1"
+  ],
+
+  "detectedSkills": [
+    "skill 1"
+  ],
+
+  "sectionScores": {
+    "skills": number,
+    "experience": number,
+    "education": number,
+    "formatting": number,
+    "keywords": number,
+    "projects": number,
+    "atsCompatibility": number
+  },
+
+  "improvements": [
+    {
+      "text": "specific improvement",
+      "priority": "high",
+      "impact": "why this matters"
+    }
+  ],
+
+  "atsTips": [
+    "tip 1"
+  ]
+}
+`;
 }
 
 // gemini attempt
@@ -225,13 +231,13 @@ const analyzeResumeWithGemini = async (resumeText, jobDescription) => {
   // If last provider failed, try the other one
   if (!result) {
 
-    if (genAI) {
+    if (genAI && lastSuccessfulProvider !== "gemini") {
       result = await tryGemini(resumeText, jobDescription);
       if (!result) errors.push("Gemini: All models failed");
     }
 
     // Fallback to Groq (also free)
-    if (!result && groq) {
+    if (!result && groq && lastSuccessfulProvider !== "groq") {
       debugLog("Falling back to Groq...");
       result = await tryGroq(resumeText, jobDescription);
       if (!result) errors.push("Groq: All models failed");

@@ -21,7 +21,7 @@ import {
   
 } from "lucide-react";
 import api from "../utils/api";
-import { ASSET_BASE_URL, getAssetUrl } from "../utils/config";
+import { getAssetUrl } from "../utils/config";
 
 const StudentProfile = () => {
   const [user, setUser] = useState(null);
@@ -334,6 +334,7 @@ const StudentProfile = () => {
     }
   };
 
+
   if (loading) {
     return (
       <Layout role="student">
@@ -348,8 +349,9 @@ const StudentProfile = () => {
   }
 
   const profilePicUrl = getAssetUrl(user?.profile?.profilePicture);
-
-  const resumeUrl = getAssetUrl(user?.profile?.resume?.fileUrl);
+  const resumeUrl = user?.profile?.resume?.fileUrl?.startsWith("http")
+    ? user.profile.resume.fileUrl
+    : getAssetUrl(user?.profile?.resume?.fileUrl || "");
 
   return (
     <Layout role="student">
@@ -664,7 +666,7 @@ const StudentProfile = () => {
               Work Experience
             </h2>
           </div>
-          <div className="p-6"> 
+          <div className="p-6">
             {experience.length > 0 ? (
               <div className="space-y-4">
                 {experience.map((exp, idx) => (
@@ -775,7 +777,7 @@ const StudentProfile = () => {
                     onClick={() => setPreviewResume(true)}
                     className="group flex items-center  content-center gap-2 px-4 py-2  text-blue-700 rounded-xl hover:text-blue-500 transition-all duration-300  hover:-translate-y-0.5 text-base font-medium"
                   >
-                    View Resume
+                    Preview Resume
                     <ArrowRight
                       size={14}
                     />

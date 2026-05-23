@@ -169,7 +169,7 @@ const StudentDashboard = () => {
             <div className="bg-white rounded-xl border shadow-sm p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold text-lg text-gray-900">
-                  Resume Score
+                  Your Resume Score
                 </h3>
                 <Award size={20} className="text-blue-500" />
               </div>

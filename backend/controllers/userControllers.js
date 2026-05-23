@@ -6,6 +6,8 @@ const {
   uploadToCloudinary,
   deleteFromCloudinary,
 } = require("../utils/cloudinaryUpload");
+const { extractText } = require("../utils/extractText");
+const { analyzeResumeWithGemini } = require("../services/resumeService");
 
 const resolveMx = promisify(dns.resolveMx);
 
@@ -259,7 +261,22 @@ exports.uploadResume = async (req, res) => {
     }
 
     const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    if (!user.profile) {
+      user.profile = {};
+    }
+
     const uploadedFile = await uploadToCloudinary(req.file, req);
+
+    const resumeText = await extractText(
+      req.file.buffer,
+      req.file.mimetype
+    );
+
+    const analysis = await analyzeResumeWithGemini(resumeText, "");
 
     if (user.profile?.resume?.publicId) {
       await deleteFromCloudinary(
@@ -276,6 +293,10 @@ exports.uploadResume = async (req, res) => {
       uploadedAt: new Date(),
     };
 
+    user.profile.resumeScore = analysis.score || 0;
+
+    user.profile.resumeSuggestions = analysis.weaknesses?.slice(0, 5) || [];
+
     await user.save();
 
     res.json({
@@ -283,11 +304,41 @@ exports.uploadResume = async (req, res) => {
       user,
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to upload resume" });
+    console.error("Resume upload error:", err);
+    
+    // Provide more specific error messages
+    let errorMessage = "Failed to upload resume";
+    if (err.message?.includes("Cloudinary")) {
+      errorMessage = "Cloudinary upload failed: " + err.message;
+    } else if (err.message?.includes("buffer")) {
+      errorMessage = "File buffer error: " + err.message;
+    } else if (err.name === "ValidationError") {
+      errorMessage = "Invalid resume data: " + err.message;
+    }
+    
+    res.status(500).json({ error: errorMessage });
   }
 };
 
+// Get current user's resume
+exports.getResume = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Check if profile and resume exist
+    if (!user.profile || !user.profile.resume || !user.profile.resume.fileUrl) {
+      return res.status(404).json({ error: "No resume found" });
+    }
+
+    res.json({ resume: user.profile.resume });
+  } catch (err) {
+    console.error("Get resume error:", err);
+    res.status(500).json({ error: "Failed to retrieve resume" });
+  }
+};
 
 //email update OTP
 exports.sendEmailUpdateOtp = async (req, res) => {

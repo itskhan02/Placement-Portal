@@ -21,84 +21,7 @@ const normalizeSkills = (skills) => {
     .filter(Boolean);
 };
 
-const getResumeAnalysisScore = async (user) => {
 
-  if (!user?.profile?.resume?.fileUrl) {
-    return {
-      score: 0,
-      suggestions: ["Upload your resume to get a score based on its quality."],
-    };
-  }
-
-  if (
-    user.profile.resumeAnalysisHistory &&
-    user.profile.resumeAnalysisHistory.length > 0
-  ) {
-    const latestAnalysis = user.profile.resumeAnalysisHistory[0];
-    if (latestAnalysis.score && latestAnalysis.score > 0) {
-      return {
-        score: latestAnalysis.score,
-        suggestions: getSuggestionsFromAnalysis(latestAnalysis.analysis),
-        analysis: latestAnalysis.analysis,
-      };
-    }
-  }
-
-  let score = 0;
-  const suggestions = [];
-
-  if (user.profile.resume?.fileUrl) {
-    score += 30;
-  } else {
-    suggestions.push("Upload your resume file");
-  }
-
-  if (
-    user.profile.resume?.fileName &&
-    !user.profile.resume.fileName.includes("resume")
-  ) {
-    score += 5;
-    suggestions.push(
-      "Name your resume file professionally (e.g., YourName_Resume.pdf)",
-    );
-  }
-
-
-  const skills = normalizeSkills(user.profile?.skills);
-  if (skills.length > 0) {
-    score += Math.min(25, skills.length * 3);
-  } else {
-    suggestions.push("Add skills to your profile to complement your resume");
-  }
-
-
-  const education = user.profile?.education || [];
-  if (education.length > 0) {
-    score += Math.min(20, education.length * 7);
-  } else {
-    suggestions.push("Add your education details");
-  }
-
-
-  const experience = user.profile?.experience || [];
-  if (experience.length > 0) {
-    score += Math.min(20, experience.length * 5);
-  } else {
-    suggestions.push("Add work experience or internships");
-  }
-
-
-  if (user.profile?.bio && user.profile.bio.length > 50) {
-    score += 10;
-  } else {
-    suggestions.push("Write a detailed bio about yourself");
-  }
-
-  return {
-    score: Math.min(100, Math.max(0, Math.round(score))),
-    suggestions: suggestions.slice(0, 5),
-  };
-};
 
 
 const getSuggestionsFromAnalysis = (analysis) => {
@@ -135,9 +58,16 @@ exports.getDashboard = async (req, res) => {
     const user = await User.findById(req.user._id).populate("profile.company");
     const userSkills = normalizeSkills(user?.profile?.skills || []);
 
-    const resumeScoreData = await getResumeAnalysisScore(user);
-    const resumeScore = resumeScoreData.score;
-    const resumeSuggestions = resumeScoreData.suggestions;
+    
+    const resumeScore =
+  typeof user?.profile?.resumeScore === "number"
+    ? user.profile.resumeScore
+    : 0;
+
+const resumeSuggestions =
+  Array.isArray(user?.profile?.resumeSuggestions)
+    ? user.profile.resumeSuggestions
+    : ["Upload your profile resume for AI analysis"];
 
     const applications = await Application.find({
       applicant: req.user._id,
@@ -148,7 +78,7 @@ exports.getDashboard = async (req, res) => {
 
     const jobs = await Job.find({
       is_active: true,
-      status: "open",
+      // status: "open",
     })
       .limit(5)
       .populate("company");
@@ -181,6 +111,10 @@ exports.getDashboard = async (req, res) => {
         resumeScore,
       });
 
+      const alreadyApplied = applications.some(
+        (app) => app.job && app.job._id.toString() === job._id.toString(),
+      );
+
       return {
         _id: job._id,
         title: job.title || "No title",
@@ -191,6 +125,7 @@ exports.getDashboard = async (req, res) => {
         skillMatch: match.skillMatch,
         resumeScore: match.resumeScore,
         match: match.overallMatch,
+        applied: alreadyApplied,
         postedAt: job.createdAt,
       };
     });

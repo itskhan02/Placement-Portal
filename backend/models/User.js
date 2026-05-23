@@ -71,6 +71,15 @@ const userSchema = new mongoose.Schema({
         default: Date.now,
       },
     },
+    resumeScore: {
+      type: Number,
+      default: 0,
+    },
+      resumeSuggestions: {
+        type: [String],
+        default: [],
+      },
+      
     resumeAnalysisHistory: [
       {
         fileName: String,

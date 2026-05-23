@@ -24,6 +24,7 @@ router.delete("/profile/education/:index", isAuthenticate, userControllers.delet
 router.post("/profile/experience", isAuthenticate, userControllers.addExperience);
 router.delete("/profile/experience/:index", isAuthenticate, userControllers.deleteExperience);
 router.post("/profile/resume", isAuthenticate, upload.single("resume"), handleMulterError, userControllers.uploadResume);
+router.get("/profile/resume", isAuthenticate, userControllers.getResume);
 router.post("/email/send-otp", isAuthenticate, userControllers.sendEmailUpdateOtp);
 router.post("/email/verify-otp", isAuthenticate, userControllers.verifyEmailUpdateOtp);
 router.put("/deactivate", isAuthenticate, userControllers.deactivateUser);
