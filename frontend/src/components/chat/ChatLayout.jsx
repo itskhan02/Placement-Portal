@@ -5,9 +5,13 @@ import { useSearchParams } from "react-router-dom";
 import { MessageCircle } from "lucide-react";
 
 const ChatLayout = () => {
-  const [selectedUser, setSelectedUser] = useState(null);
   const [searchParams] = useSearchParams();
   const selectedUserId = searchParams.get("user");
+  const [selectedUser, setSelectedUser] = useState(null);
+
+  const handleSelectUser = (user) => {
+    setSelectedUser(user);
+  };
 
   const activeUserId = useMemo(
     () => selectedUser?._id || selectedUserId || null,
@@ -39,14 +43,16 @@ const ChatLayout = () => {
             </div>
           </div>
 
-          <ChatList selectedUserId={activeUserId} onSelect={setSelectedUser} />
+          <ChatList selectedUserId={activeUserId} onSelect={handleSelectUser} />
         </div>
 
         {/* Chat Window */}
         <div className={`${activeUserId ? "flex" : "hidden md:flex"} flex-1`}>
           <ChatWindow
             selectedUser={selectedUser}
-            onBack={() => setSelectedUser(null)}
+            onBack={() => {
+              setSelectedUser(null);
+            }}
           />
         </div>
       </div>

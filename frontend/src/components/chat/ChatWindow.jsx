@@ -3,6 +3,7 @@ import api from "../../utils/api";
 import { socket } from "../../utils/socket";
 import { useAuth } from "../../context/AuthContext";
 import MessageInput from "./MessageInput";
+import { getAssetUrl } from "../../utils/config";
 import {
   MoreVertical,
   User,
@@ -24,6 +25,7 @@ const ChatWindow = ({ selectedUser, onBack }) => {
   const [showProfile, setShowProfile] = useState(false);
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -63,6 +65,22 @@ const ChatWindow = ({ selectedUser, onBack }) => {
       isMounted = false;
     };
   }, [selectedUser?._id]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowProfile(false);
+      }
+    };
+
+    if (showProfile) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showProfile]);
 
   const visibleMessages = selectedUser?._id ? messages : [];
 
@@ -216,8 +234,18 @@ const ChatWindow = ({ selectedUser, onBack }) => {
             </button>
 
             <div className="relative flex-shrink-0">
-              <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white font-bold text-sm sm:text-lg shadow-md">
-                {selectedUser.name?.charAt(0).toUpperCase()}
+              <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-full overflow-hidden shadow-md bg-gray-200">
+                {selectedUser.profilePicture ? (
+                  <img
+                    src={getAssetUrl(selectedUser.profilePicture)}
+                    alt={selectedUser.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white font-bold text-sm sm:text-lg">
+                    {selectedUser.name?.charAt(0).toUpperCase()}
+                  </div>
+                )}
               </div>
               {/* Online status indicator */}
               <div className="absolute bottom-0 right-0 w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 bg-green-500 border-2 border-white rounded-full"></div>
@@ -263,7 +291,10 @@ const ChatWindow = ({ selectedUser, onBack }) => {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
+          <div
+            className="relative flex items-center gap-0.5 sm:gap-1 flex-shrink-0"
+            ref={dropdownRef}
+          >
             {/* <button className="p-2 hover:bg-gray-100 rounded-full transition-colors group">
               <Phone className="h-5 w-5 text-gray-500 group-hover:text-blue-500 transition-colors" />
             </button>
@@ -281,11 +312,21 @@ const ChatWindow = ({ selectedUser, onBack }) => {
 
         {/* Profile Dropdown (optional) */}
         {showProfile && (
-          <div className="mt-2 w-72 sm:w-80 max-h-[60vh] bg-white rounded-xl shadow-xl border border-gray-200 z-10 animate-fade-in overflow-y-auto">
+          <div className="absolute top-12 right-0 sm:right-0 w-72 sm:w-80 max-h-[60vh] bg-white rounded-xl shadow-xl border border-gray-200 z-50 animate-fade-in overflow-y-auto">
             <div className="p-3 sm:p-4 border-b border-gray-100">
               <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white font-bold text-xl sm:text-2xl shadow-md flex-shrink-0">
-                  {selectedUser.name?.charAt(0).toUpperCase()}
+                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full overflow-hidden shadow-sm bg-gray-200 flex-shrink-0">
+                  {selectedUser.profilePicture ? (
+                    <img
+                      src={getAssetUrl(selectedUser.profilePicture)}
+                      alt={selectedUser.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white text-xs font-semibold">
+                      {selectedUser.name?.charAt(0).toUpperCase()}
+                    </div>
+                  )}
                 </div>
                 <div className="min-w-0">
                   <h4 className="font-semibold text-gray-900 text-sm sm:text-base truncate">
@@ -357,10 +398,13 @@ const ChatWindow = ({ selectedUser, onBack }) => {
         {!error &&
           visibleMessages.map((m, index) => {
             const isOwn = isOwnMessage(m.sender);
-            const showAvatar =
-              !isOwn &&
-              (index === 0 ||
-                isOwnMessage(visibleMessages[index - 1]?.sender) !== false);
+          const previousMessage = visibleMessages[index - 1];
+
+          const previousIsOwn = previousMessage
+            ? isOwnMessage(previousMessage.sender)
+            : null;
+
+          const showAvatar = index === 0 || previousIsOwn !== isOwn;
 
             return (
               <div
@@ -370,12 +414,33 @@ const ChatWindow = ({ selectedUser, onBack }) => {
                 <div
                   className={`flex ${isOwn ? "flex-row-reverse" : "flex-row"} items-end gap-1 sm:gap-2 max-w-[90%] sm:max-w-[85%] md:max-w-[70%]`}
                 >
-                  {!isOwn && showAvatar && (
-                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0 shadow-sm">
-                      {selectedUser.name?.charAt(0).toUpperCase()}
+                  {showAvatar ? (
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full overflow-hidden shadow-sm bg-gray-200 flex-shrink-0">
+                      {isOwn ? (
+                        user?.profile?.profilePicture ? (
+                          <img
+                            src={getAssetUrl(user.profile.profilePicture)}
+                            alt={user.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white text-xs font-semibold">
+                            {user?.name?.charAt(0).toUpperCase()}
+                          </div>
+                        )
+                      ) : selectedUser.profilePicture ? (
+                        <img
+                          src={getAssetUrl(selectedUser.profilePicture)}
+                          alt={selectedUser.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-r from-gray-500 to-gray-600 flex items-center justify-center text-white text-xs font-semibold">
+                          {selectedUser.name?.charAt(0).toUpperCase()}
+                        </div>
+                      )}
                     </div>
-                  )}
-                  {!isOwn && !showAvatar && (
+                  ) : (
                     <div className="w-6 sm:w-8 flex-shrink-0"></div>
                   )}
 

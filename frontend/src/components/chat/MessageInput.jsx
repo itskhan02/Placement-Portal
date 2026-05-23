@@ -9,6 +9,7 @@ const MessageInput = ({ receiver, onSent, disabled = false }) => {
   const [isTyping, setIsTyping] = useState(false);
   const [isSending, setIsSending] = useState(false);
 
+
   const typingTimeoutRef = useRef(null);
   const { user } = useAuth();
 
