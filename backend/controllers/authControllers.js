@@ -1,11 +1,9 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
+const sendEmail = require("../utils/sendMail");
 
 require("dotenv").config();
-
-const isDevelopment = process.env.NODE_ENV === "development";
 
 //register
 
@@ -115,30 +113,18 @@ exports.forgotPassword = async (req, res) => {
     user.otpExpires = Date.now() + 5 * 60 * 1000;
     await user.save();
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-      tls: {
-        rejectUnauthorized: false,
-      },
-    });
-
-    const mailOptions = {
-      from: `"Smart Place" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: "Your OTP Code",
-
-      text: `
+    try {
+      await sendEmail({
+        to: email,
+        subject: "Your OTP Code",
+        text: `
           Your OTP is: ${otp}
 
             Valid for 5 minutes.
                 Do not share this code with anyone.
           `,
 
-      html: `
+        html: `
             <div style="font-family: Arial; text-align: center;">
             <h2>Your OTP</h2>
             <h1 style="color:#008cff;">${otp}</h1>
@@ -146,22 +132,15 @@ exports.forgotPassword = async (req, res) => {
             <p style="color:red;">Do not share this code</p>
             </div>
       `,
-    };
-
-    try {
-      const info = await transporter.sendMail(mailOptions);
-      if (isDevelopment && (!process.env.EMAIL_USER || !process.env.EMAIL_PASS)) {
-        console.log(
-          "Ethereal preview URL:",
-          nodemailer.getTestMessageUrl(info),
-        );
-      }
+      });
     } catch (emailErr) {
       console.error("Forgot password email error:", emailErr);
       if (process.env.NODE_ENV !== "production") {
         return res.json({ message: "OTP generated and sent", otp });
       }
-      return res.status(500).json({ error: "Failed to send OTP email" });
+      return res.status(503).json({
+        error: "Email service is unavailable. Please try again later.",
+      });
     }
 
     return res.json({ message: "OTP sent to email" });
