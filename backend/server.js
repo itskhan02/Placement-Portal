@@ -11,6 +11,44 @@ dotenv.config({ path: path.resolve(__dirname, ".env") });
 dotenv.config({ path: path.resolve(__dirname, "../.env"), override: false });
 const connectDB = require("./config/db");
 
+// Validate email configuration at startup
+const validateEmailConfig = () => {
+  const user = (process.env.EMAIL_USER || "").trim();
+  const pass = (process.env.EMAIL_PASS || "").trim();
+  const resendApiKey = (process.env.RESEND_API_KEY || "").trim();
+  const provider = (process.env.EMAIL_PROVIDER || "").trim().toLowerCase();
+  const fromAddress = (process.env.EMAIL_FROM || process.env.RESEND_FROM_EMAIL || user).trim();
+  
+  const detectedProvider = provider || (resendApiKey ? "resend" : "gmail");
+  
+  console.log("\n[Email Config Validation]");
+  console.log(`  Provider: ${detectedProvider}`);
+  console.log(`  FROM Address: ${fromAddress ? "✓ Configured" : "✗ NOT CONFIGURED"}`);
+  
+  if (detectedProvider === "resend") {
+    console.log(`  Resend API Key: ${resendApiKey ? "✓ Configured" : "✗ NOT CONFIGURED"}`);
+    if (!resendApiKey) {
+      console.warn("  ⚠ WARNING: RESEND_API_KEY is not set. Email service will fail.");
+    }
+  } else {
+    console.log(`  Gmail User: ${user ? "✓ Configured" : "✗ NOT CONFIGURED"}`);
+    console.log(`  Gmail Pass: ${pass ? "✓ Configured" : "✗ NOT CONFIGURED"}`);
+    if (!user || !pass) {
+      console.warn("  ⚠ WARNING: EMAIL_USER or EMAIL_PASS is not set. Email service will fail.");
+    }
+    if (!pass) {
+      console.warn("  ⚠ TIP: Use an app-specific password for Gmail, not your regular password.");
+    }
+  }
+  
+  if (!fromAddress) {
+    console.warn("  ⚠ WARNING: EMAIL_FROM (or RESEND_FROM_EMAIL) not set. Email will fail.");
+  }
+  console.log("");
+};
+
+validateEmailConfig();
+
 const _dirname = path.resolve();
 
 // Routes
