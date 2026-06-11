@@ -1,7 +1,8 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const sendEmail = require("../utils/sendMail");
+const crypto = require("crypto");
+const nodemailer = require("nodemailer");
 
 require("dotenv").config();
 
@@ -11,6 +12,7 @@ exports.register = async (req, res) => {
   const { name, email, password, role } = req.body;
 
   try {
+    const allowedRoles = ["student", "recruiter", "admin"];
     let userRole = "student";
 
     if (role === "recruiter") userRole = "recruiter";
@@ -58,15 +60,11 @@ exports.login = async (req, res) => {
       await user.save();
     }
 
-    
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.status(400).json({ error: "Invalid Credentials" });
 
     const token = jwt.sign(
-      { userId: user._id, 
-        role: user.role,
-        tokenVersion: user.tokenVersion,
-      },
+      { userId: user._id, role: user.role, tokenVersion: user.tokenVersion },
       process.env.JWT_SECRETKEY,
       { expiresIn: "15D" },
     );
@@ -76,7 +74,7 @@ exports.login = async (req, res) => {
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 15 * 24 * 60 * 60 * 1000,
-    })
+    });
     res.status(200).json({
       token,
       user: {
@@ -94,12 +92,7 @@ exports.login = async (req, res) => {
 //forgot password
 
 exports.forgotPassword = async (req, res) => {
-  const email = req.body.email?.trim().toLowerCase();
-
-  if (!email) {
-    return res.status(400).json({ error: "Email is required" });
-  }
-
+  const { email } = req.body;
   try {
     const user = await User.findOne({ email });
 
@@ -113,18 +106,30 @@ exports.forgotPassword = async (req, res) => {
     user.otpExpires = Date.now() + 5 * 60 * 1000;
     await user.save();
 
-    try {
-      await sendEmail({
-        to: email,
-        subject: "Your OTP Code",
-        text: `
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+      tls: {
+        rejectUnauthorized: false,
+      },
+    });
+
+    const mailOptions = {
+      from: `"Smart Place" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "Your OTP Code",
+
+      text: `
           Your OTP is: ${otp}
 
             Valid for 5 minutes.
                 Do not share this code with anyone.
           `,
 
-        html: `
+      html: `
             <div style="font-family: Arial; text-align: center;">
             <h2>Your OTP</h2>
             <h1 style="color:#008cff;">${otp}</h1>
@@ -132,20 +137,16 @@ exports.forgotPassword = async (req, res) => {
             <p style="color:red;">Do not share this code</p>
             </div>
       `,
-      });
+    };
+
+    try {
+      const info = await transporter.sendMail(mailOptions);
     } catch (emailErr) {
-      console.error("Forgot password email error:", {
-        message: emailErr.message,
-        code: emailErr.code,
-        stack: emailErr.stack,
-      });
+      console.error("Forgot password email error:", emailErr);
       if (process.env.NODE_ENV !== "production") {
         return res.json({ message: "OTP generated and sent", otp });
       }
-      return res.status(503).json({
-        error: "Email service is unavailable. Please try again later.",
-        details: emailErr.message, // Remove this in production if sensitive
-      });
+      return res.status(500).json({ error: "Failed to send OTP email" });
     }
 
     return res.json({ message: "OTP sent to email" });
@@ -158,21 +159,7 @@ exports.forgotPassword = async (req, res) => {
 //reset password
 
 exports.resetPassword = async (req, res) => {
-  const email = req.body.email?.trim().toLowerCase();
-  const otp = req.body.otp?.trim();
-  const { newPassword } = req.body;
-
-  if (!email || !otp || !newPassword) {
-    return res.status(400).json({ error: "Email, OTP and new password are required" });
-  }
-
-  if (!/^\d{6}$/.test(otp)) {
-    return res.status(400).json({ error: "Enter a valid 6 digit OTP" });
-  }
-
-  if (newPassword.length < 8) {
-    return res.status(400).json({ error: "Password must be at least 8 characters" });
-  }
+  const { email, otp, newPassword } = req.body;
 
   try {
     const user = await User.findOne({
@@ -190,7 +177,6 @@ exports.resetPassword = async (req, res) => {
     user.password = hashedPassword;
     user.otp = undefined;
     user.otpExpires = undefined;
-    user.tokenVersion += 1;
 
     await user.save();
 

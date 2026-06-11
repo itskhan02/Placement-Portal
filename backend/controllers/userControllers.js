@@ -1,11 +1,11 @@
 const User = require("../models/User");
 const dns = require("dns");
+const nodemailer = require("nodemailer");
 const { promisify } = require("util");
 const {
   uploadToCloudinary,
   deleteFromCloudinary,
 } = require("../utils/cloudinaryUpload");
-const sendEmail = require("../utils/sendMail");
 const { extractText } = require("../utils/extractText");
 const { analyzeResumeWithGemini } = require("../services/resumeService");
 
@@ -23,22 +23,23 @@ exports.getProfile = async (req, res) => {
     }
 
     res.status(200).json({ user });
-
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch profile" });
   }
 };
 
-exports.getUserById = async (req,res) => {
+exports.getUserById = async (req, res) => {
   try {
-    const {id} = req.params;
-    const user = await User.findById(id).select("-password").populate("profile.company");
+    const { id } = req.params;
+    const user = await User.findById(id)
+      .select("-password")
+      .populate("profile.company");
     if (!user) {
-      return res.status(404).json({error: "User not found"});
+      return res.status(404).json({ error: "User not found" });
     }
     res.status(200).json(user);
   } catch (err) {
-    return res.status(500).json({error: " Failed to fetch user"});
+    return res.status(500).json({ error: " Failed to fetch user" });
   }
 };
 
@@ -51,15 +52,20 @@ exports.updateProfile = async (req, res) => {
 
     let updateData = {};
 
-    if (Object.prototype.hasOwnProperty.call(body, "name")) updateData.name = body.name;
-    if (Object.prototype.hasOwnProperty.call(body, "bio")) updateData["profile.bio"] = body.bio;
-    if (Object.prototype.hasOwnProperty.call(body, "location")) updateData["profile.location"] = body.location;
-
+    if (Object.prototype.hasOwnProperty.call(body, "name"))
+      updateData.name = body.name;
+    if (Object.prototype.hasOwnProperty.call(body, "bio"))
+      updateData["profile.bio"] = body.bio;
+    if (Object.prototype.hasOwnProperty.call(body, "location"))
+      updateData["profile.location"] = body.location;
 
     if (role === "student") {
-      if (Object.prototype.hasOwnProperty.call(body, "skills")) updateData["profile.skills"] = body.skills;
-      if (Object.prototype.hasOwnProperty.call(body, "education")) updateData["profile.education"] = body.education;
-      if (Object.prototype.hasOwnProperty.call(body, "experience")) updateData["profile.experience"] = body.experience;
+      if (Object.prototype.hasOwnProperty.call(body, "skills"))
+        updateData["profile.skills"] = body.skills;
+      if (Object.prototype.hasOwnProperty.call(body, "education"))
+        updateData["profile.education"] = body.education;
+      if (Object.prototype.hasOwnProperty.call(body, "experience"))
+        updateData["profile.experience"] = body.experience;
     }
 
     if (role === "recruiter") {
@@ -88,11 +94,10 @@ exports.updateProfile = async (req, res) => {
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { $set: updateData },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     ).select("-password");
 
     res.json({ user: updatedUser });
-
   } catch (err) {
     res.status(500).json({ error: "Update failed" });
   }
@@ -124,14 +129,13 @@ exports.updateProfilePicture = async (req, res) => {
         "profile.profilePicturePublicId": uploadedFile.public_id,
         "profile.profilePictureResourceType": uploadedFile.resource_type,
       },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     ).select("-password");
 
     res.status(200).json({
       message: "Profile picture updated",
       user: updatedUser,
     });
-
   } catch (err) {
     console.error("Profile picture upload error:", err);
     res.status(500).json({ error: "Failed to update profile picture" });
@@ -146,14 +150,13 @@ exports.addSkills = async (req, res) => {
     const updatedUser = await User.findByIdAndUpdate(
       req.user._id,
       { "profile.skills": skills },
-      { new: true }
+      { new: true },
     ).select("-password");
 
     res.json({
       message: "Skills updated",
       user: updatedUser,
     });
-
   } catch (err) {
     res.status(500).json({ error: "Failed to update skills" });
   }
@@ -167,14 +170,13 @@ exports.addEducation = async (req, res) => {
     const updatedUser = await User.findByIdAndUpdate(
       req.user._id,
       { $push: { "profile.education": education } },
-      { new: true }
+      { new: true },
     ).select("-password");
 
     res.json({
       message: "Education added",
       user: updatedUser,
     });
-
   } catch (err) {
     res.status(500).json({ error: "Failed to update education" });
   }
@@ -188,14 +190,13 @@ exports.addExperience = async (req, res) => {
     const updatedUser = await User.findByIdAndUpdate(
       req.user._id,
       { $push: { "profile.experience": experience } },
-      { new: true }
+      { new: true },
     ).select("-password");
 
     res.json({
       message: "Experience added",
       user: updatedUser,
     });
-
   } catch (err) {
     res.status(500).json({ error: "Failed to update experience" });
   }
@@ -221,7 +222,6 @@ exports.deleteEducation = async (req, res) => {
       message: "Education deleted",
       user: updatedUser,
     });
-
   } catch (err) {
     res.status(500).json({ error: "Failed to delete education" });
   }
@@ -247,7 +247,6 @@ exports.deleteExperience = async (req, res) => {
       message: "Experience deleted",
       user: updatedUser,
     });
-
   } catch (err) {
     res.status(500).json({ error: "Failed to delete experience" });
   }
@@ -271,10 +270,7 @@ exports.uploadResume = async (req, res) => {
 
     const uploadedFile = await uploadToCloudinary(req.file, req);
 
-    const resumeText = await extractText(
-      req.file.buffer,
-      req.file.mimetype
-    );
+    const resumeText = await extractText(req.file.buffer, req.file.mimetype);
 
     const analysis = await analyzeResumeWithGemini(resumeText, "");
 
@@ -305,7 +301,7 @@ exports.uploadResume = async (req, res) => {
     });
   } catch (err) {
     console.error("Resume upload error:", err);
-    
+
     // Provide more specific error messages
     let errorMessage = "Failed to upload resume";
     if (err.message?.includes("Cloudinary")) {
@@ -315,7 +311,7 @@ exports.uploadResume = async (req, res) => {
     } else if (err.name === "ValidationError") {
       errorMessage = "Invalid resume data: " + err.message;
     }
-    
+
     res.status(500).json({ error: errorMessage });
   }
 };
@@ -353,10 +349,24 @@ exports.sendEmailUpdateOtp = async (req, res) => {
 
     await user.save();
 
-    await sendEmail({
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+      tls: {
+        rejectUnauthorized: false,
+      },
+    });
+
+    const mailOptions = {
+      from: `"Smart Place" <${process.env.EMAIL_USER}>`,
       to: user.email,
       subject: "Email Update OTP",
+
       text: `Your OTP is: ${otp}`,
+
       html: `
         <div style="font-family: Arial; text-align: center;">
           <h2>Email Update Verification</h2>
@@ -365,12 +375,12 @@ exports.sendEmailUpdateOtp = async (req, res) => {
           <p style="color:red;">Do not share this code</p>
         </div>
       `,
-    });
+    };
+
+    await transporter.sendMail(mailOptions);
 
     res.json({ message: "OTP sent to your current email" });
-
   } catch (err) {
-    console.error("Email update OTP error:", err);
     res.status(500).json({ error: "Failed to send OTP" });
   }
 };
@@ -422,18 +432,15 @@ exports.verifyEmailUpdateOtp = async (req, res) => {
     await user.save();
 
     res.json({ message: "Email updated successfully", user });
-
   } catch (err) {
     console.error("Email update verification failed:", err);
     res.status(500).json({ error: "Verification failed" });
   }
 };
 
-
 //deactivate account
 exports.deactivateUser = async (req, res) => {
   try {
-    
     const user = await User.findByIdAndUpdate(
       req.user._id,
       {
