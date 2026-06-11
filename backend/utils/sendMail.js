@@ -1,9 +1,12 @@
-const transporter = require("./mailer");
+const { createTransporter, getMailConfig } = require("./mailer");
 
 const sendEmail = async ({ to, subject, text, html }) => {
   try {
+    const transporter = createTransporter();
+    const { from } = getMailConfig();
+
     await transporter.sendMail({
-      from: `"Smart Place" <${process.env.EMAIL_USER}>`,
+      from,
       to,
       subject,
       text,

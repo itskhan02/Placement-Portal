@@ -1,11 +1,11 @@
 const User = require("../models/User");
 const dns = require("dns");
-const nodemailer = require("nodemailer");
 const { promisify } = require("util");
 const {
   uploadToCloudinary,
   deleteFromCloudinary,
 } = require("../utils/cloudinaryUpload");
+const sendEmail = require("../utils/sendMail");
 const { extractText } = require("../utils/extractText");
 const { analyzeResumeWithGemini } = require("../services/resumeService");
 
@@ -353,24 +353,10 @@ exports.sendEmailUpdateOtp = async (req, res) => {
 
     await user.save();
 
-    const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-  tls: {
-    rejectUnauthorized: false,
-  },
-});
-
-    const mailOptions = {
-      from: `"Smart Place" <${process.env.EMAIL_USER}>`,
+    await sendEmail({
       to: user.email,
       subject: "Email Update OTP",
-
       text: `Your OTP is: ${otp}`,
-
       html: `
         <div style="font-family: Arial; text-align: center;">
           <h2>Email Update Verification</h2>
@@ -379,13 +365,12 @@ exports.sendEmailUpdateOtp = async (req, res) => {
           <p style="color:red;">Do not share this code</p>
         </div>
       `,
-    };
-
-    await transporter.sendMail(mailOptions);
+    });
 
     res.json({ message: "OTP sent to your current email" });
 
   } catch (err) {
+    console.error("Email update OTP error:", err);
     res.status(500).json({ error: "Failed to send OTP" });
   }
 };
