@@ -134,12 +134,17 @@ exports.forgotPassword = async (req, res) => {
       `,
       });
     } catch (emailErr) {
-      console.error("Forgot password email error:", emailErr);
+      console.error("Forgot password email error:", {
+        message: emailErr.message,
+        code: emailErr.code,
+        stack: emailErr.stack,
+      });
       if (process.env.NODE_ENV !== "production") {
         return res.json({ message: "OTP generated and sent", otp });
       }
       return res.status(503).json({
         error: "Email service is unavailable. Please try again later.",
+        details: emailErr.message, // Remove this in production if sensitive
       });
     }
 
