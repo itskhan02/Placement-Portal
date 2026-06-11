@@ -2,7 +2,7 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
-const nodemailer = require("nodemailer");
+const transporter = require("../utils/mailer");
 
 require("dotenv").config();
 
@@ -106,17 +106,6 @@ exports.forgotPassword = async (req, res) => {
     user.otpExpires = Date.now() + 5 * 60 * 1000;
     await user.save();
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-      tls: {
-        rejectUnauthorized: false,
-      },
-    });
-
     const mailOptions = {
       from: `"Smart Place" <${process.env.EMAIL_USER}>`,
       to: email,
@@ -140,12 +129,18 @@ exports.forgotPassword = async (req, res) => {
     };
 
     try {
+      console.log(`[Email] Sending OTP to ${email}`);
       const info = await transporter.sendMail(mailOptions);
+      console.log(`[Email] OTP sent successfully to ${email}`, info.response);
     } catch (emailErr) {
-      console.error("Forgot password email error:", emailErr);
-      if (process.env.NODE_ENV !== "production") {
-        return res.json({ message: "OTP generated and sent", otp });
-      }
+      console.error("[Email Error] Failed to send OTP:", {
+        to: email,
+        message: emailErr.message,
+        code: emailErr.code,
+        command: emailErr.command,
+        responseCode: emailErr.responseCode,
+        stack: emailErr.stack,
+      });
       return res.status(500).json({ error: "Failed to send OTP email" });
     }
 
