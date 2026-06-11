@@ -10,11 +10,13 @@ const sendEmail = async ({ to, subject, text, html }) => {
       html,
     };
 
-    await transporter.sendMail({
-      to: user.email,
-      subject,
-      html,
-    });
+   await transporter.sendMail({
+     from: `"Smart Place" <${process.env.EMAIL_USER}>`,
+     to,
+     subject,
+     text,
+     html,
+   });
   } catch (err) {
     console.error("Email Error:", err.message);
   }
