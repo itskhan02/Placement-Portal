@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import Layout from "../components/Layout";
 import api from "../utils/api";
@@ -19,11 +19,7 @@ const StudentJobs = () => {
 
   const getCompanyName = (company) => company?.name || company || "Company";
 
-  useEffect(() => {
-    fetchJobs();
-  }, [searchQuery, locationFilter, jobTypeFilter, sortBy]);
-
-  const fetchJobs = async () => {
+  const fetchJobs = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
@@ -42,7 +38,11 @@ const StudentJobs = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [jobTypeFilter, locationFilter, searchQuery, sortBy]);
+
+  useEffect(() => {
+    fetchJobs();
+  }, [fetchJobs]);
 
   const clearFilters = () => {
     setSearchQuery("");

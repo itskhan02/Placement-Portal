@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import Layout from "../components/Layout";
@@ -15,11 +15,7 @@ const JobDetails = () => {
   const [applying, setApplying] = useState(false);
   const [companyLogoError, setCompanyLogoError] = useState(false);
 
-  useEffect(() => {
-    fetchJob();
-  }, []);
-
-  const fetchJob = async () => {
+  const fetchJob = useCallback(async () => {
     try {
       const res = await api.get(`/jobs/details/${id}`);
       setJob(res.data.job);
@@ -28,7 +24,11 @@ const JobDetails = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    fetchJob();
+  }, [fetchJob]);
 
   const formatPostedTime = (date) => {
     if (!date) return "Recently";

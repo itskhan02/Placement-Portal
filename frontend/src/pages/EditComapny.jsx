@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import api from "../utils/api";
@@ -21,15 +21,7 @@ const EditCompany = ({ companyId: propCompanyId, onBack }) => {
   const [preview, setPreview] = useState("");
   const [loading, setLoading] = useState(true);
 
-  
-  useEffect(() => {
-    if (companyId) {
-      fetchCompany();
-    }
-  }, [companyId]);
-
-
-  const fetchCompany = async () => {
+  const fetchCompany = useCallback(async () => {
     if (!companyId) return;
 
     try {
@@ -53,7 +45,11 @@ const EditCompany = ({ companyId: propCompanyId, onBack }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [companyId]);
+
+  useEffect(() => {
+    fetchCompany();
+  }, [fetchCompany]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;

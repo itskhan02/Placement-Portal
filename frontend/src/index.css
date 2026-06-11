@@ -195,7 +195,7 @@ a:active {
 }
 
 .front {
-    background: url('/bg.jpg');
+    background: linear-gradient(135deg, #4e6bef 0%, #4463b7 100%);
     min-height: 100%;
     width: 100%;
     background-position: center top 10%;

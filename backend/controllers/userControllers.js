@@ -365,7 +365,7 @@ exports.sendEmailUpdateOtp = async (req, res) => {
 });
 
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: `"Smart Place" <${process.env.EMAIL_USER}>`,
       to: user.email,
       subject: "Email Update OTP",
 

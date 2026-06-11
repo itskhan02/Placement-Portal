@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Layout from "../components/Layout";
 import {
   FileText,
@@ -54,17 +54,13 @@ const StudentProfile = () => {
   const [resumeLoading, setResumeLoading] = useState(false);
   const [previewResume, setPreviewResume] = useState(false);
 
-  useEffect(() => {
-    fetchProfile();
-  }, []);
-
   const clearMessages = () => {
     setTimeout(() => {
       setError(null);
     }, 3000);
   };
 
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -87,7 +83,11 @@ const StudentProfile = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
 
   const handleUpdateProfile = async () => {
     try {

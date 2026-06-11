@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Layout from "../components/Layout";
 import { useNavigate } from "react-router-dom";
 import { Plus, X, ArrowLeft, Briefcase,  Loader2} from "lucide-react";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import { toast } from "react-hot-toast";
 import api from "../utils/api";
 
@@ -100,7 +100,7 @@ const PostJob = () => {
     <>
       <Layout role="recruiter">
         <div className="max-w-full  space-y-6">
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
           >
@@ -135,7 +135,7 @@ const PostJob = () => {
                 </p>
               </div>
             </div>
-          </motion.div>
+          </Motion.div>
 
           <div>
             <form

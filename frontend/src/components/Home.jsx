@@ -1,11 +1,23 @@
 import React from "react";
 import { useState } from "react";
 import { ArrowRight, GraduationCap } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import Features from "./Features";
 
 const Home = () => {
   const [hover, setHover] = useState(false);
+  const { isAuthenticated, user } = useAuth();
+
+  const getDestination = () => {
+    if (!isAuthenticated) return "/register";
+
+    if (user.role === "student") return "/student";
+    if (user.role === "recruiter") return "/recruiter";
+    if (user.role === "admin") return "/admin";
+
+    return "/";
+  };
 
   return (
     <>
@@ -55,20 +67,19 @@ const Home = () => {
             }}
           >
             <Link to="/" className="logo">
-            <GraduationCap color="#118ff7" size={30}  />
-            <h2>SmartPlace</h2>
+              <GraduationCap color="#118ff7" size={30} />
+              <h2>SmartPlace</h2>
             </Link>
-            
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-            <Link to="/login">
-              <button  className="login">
-                Login
+            <Link to={isAuthenticated ? `/${user.role}` : "/login"}>
+              <button className="login">
+                {isAuthenticated ? "Dashboard" : "Login"}
               </button>
             </Link>
-            <Link to="/register">
-              <button  className="register">
-                Register
+            <Link to={isAuthenticated ? `/${user.role}` : "/register"}>
+              <button className="register">
+                {isAuthenticated ? "Dashboard" : "Register"}
               </button>
             </Link>
           </div>
@@ -185,7 +196,7 @@ const Home = () => {
               color: "#f6f6f6",
             }}
           >
-            <Link to="/register">
+            <Link to={getDestination()}>
               <button
                 variant="hero"
                 style={{
@@ -229,9 +240,10 @@ const Home = () => {
           //   borderRadius: ".5rem",
           // }}
         > */}
-          <Features/>
-          
-          <footer style={{
+        <Features />
+
+        <footer
+          style={{
             display: "flex",
             flexDirection: "row",
             alignItems: "center",
@@ -243,19 +255,25 @@ const Home = () => {
             backdropFilter: "blur(15px)",
             WebkitBackdropFilter: "blur(15px)",
             borderTop: "1px solid rgba(255, 255, 255, 0.2)",
-            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",}}>
-            <div style={{
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+          }}
+        >
+          <div
+            style={{
               display: "flex",
               alignItems: "center",
               gap: "0.5rem",
               fontWeight: "500",
               fontSize: "1.2rem",
-            }}>
-            <GraduationCap color="#008cff" size={30}  />
+            }}
+          >
+            <GraduationCap color="#008cff" size={30} />
             <h2>SmartPlace</h2>
-            </div>
-            <p style={{color: "#575656", fontSize: "1rem"}}>© 2026 SmartPlace. All rights reserved.</p>
-          </footer>
+          </div>
+          <p style={{ color: "#575656", fontSize: "1rem" }}>
+            © 2026 SmartPlace. All rights reserved.
+          </p>
+        </footer>
         {/* </div> */}
       </div>
     </>
@@ -263,8 +281,3 @@ const Home = () => {
 };
 
 export default Home;
-
-
-
-
-

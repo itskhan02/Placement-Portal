@@ -244,19 +244,7 @@ const ResumeAnalyzer = () => {
   const [fileInfo, setFileInfo] = useState(null); // { name, size } when file is stored
   const fileInputRef = useRef(null);
 
-  // Restore session on mount
-  useEffect(() => {
-    restoreSession();
-  }, []);
-
-  // Save to session whenever state changes
-  useEffect(() => {
-    if (file || fileDataURL || jobDescription || jobTitle || analysis) {
-      saveSessionState();
-    }
-  }, [file, fileDataURL, jobDescription, jobTitle, analysis]);
-
-  const saveSessionState = () => {
+  const saveSessionState = useCallback(() => {
     if (fileInfo) {
       saveToSession(STORAGE_KEYS.FILE_NAME, fileInfo.name);
       saveToSession(STORAGE_KEYS.FILE_SIZE, fileInfo.size);
@@ -273,9 +261,9 @@ const ResumeAnalyzer = () => {
       setSessionTimestamp(now);
       saveToSession(STORAGE_KEYS.TIMESTAMP, now);
     }
-  };
+  }, [analysis, fileDataURL, fileInfo, jobDescription, jobTitle, sessionTimestamp]);
 
-  const restoreSession = () => {
+  const restoreSession = useCallback(() => {
     if (!isSessionValid()) {
       clearSession();
       return;
@@ -312,7 +300,19 @@ const ResumeAnalyzer = () => {
     if (savedJobDescription) setJobDescription(savedJobDescription);
     if (savedAnalysis) setAnalysis(savedAnalysis);
     if (savedTimestamp) setSessionTimestamp(savedTimestamp);
-  };
+  }, []);
+
+  // Restore session on mount
+  useEffect(() => {
+    restoreSession();
+  }, [restoreSession]);
+
+  // Save to session whenever state changes
+  useEffect(() => {
+    if (file || fileDataURL || jobDescription || jobTitle || analysis || fileInfo) {
+      saveSessionState();
+    }
+  }, [analysis, file, fileDataURL, fileInfo, jobDescription, jobTitle, saveSessionState]);
 
   const fetchHistory = async () => {
     try {

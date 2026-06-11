@@ -1,7 +1,6 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 
 require("dotenv").config();
@@ -14,7 +13,6 @@ exports.register = async (req, res) => {
   const { name, email, password, role } = req.body;
 
   try {
-    const allowedRoles = ["student", "recruiter", "admin"];
     let userRole = "student";
 
     if (role === "recruiter") userRole = "recruiter";
@@ -98,7 +96,12 @@ exports.login = async (req, res) => {
 //forgot password
 
 exports.forgotPassword = async (req, res) => {
-  const { email } = req.body;
+  const email = req.body.email?.trim().toLowerCase();
+
+  if (!email) {
+    return res.status(400).json({ error: "Email is required" });
+  }
+
   try {
     const user = await User.findOne({ email });
 
@@ -124,7 +127,7 @@ exports.forgotPassword = async (req, res) => {
     });
 
     const mailOptions = {
-      from: process.env.EMAIL_USER || "no-reply@example.com",
+      from: `"Smart Place" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "Your OTP Code",
 
@@ -135,7 +138,7 @@ exports.forgotPassword = async (req, res) => {
                 Do not share this code with anyone.
           `,
 
-        html: `
+      html: `
             <div style="font-family: Arial; text-align: center;">
             <h2>Your OTP</h2>
             <h1 style="color:#008cff;">${otp}</h1>
@@ -171,7 +174,21 @@ exports.forgotPassword = async (req, res) => {
 //reset password
 
 exports.resetPassword = async (req, res) => {
-  const { email, otp, newPassword } = req.body;
+  const email = req.body.email?.trim().toLowerCase();
+  const otp = req.body.otp?.trim();
+  const { newPassword } = req.body;
+
+  if (!email || !otp || !newPassword) {
+    return res.status(400).json({ error: "Email, OTP and new password are required" });
+  }
+
+  if (!/^\d{6}$/.test(otp)) {
+    return res.status(400).json({ error: "Enter a valid 6 digit OTP" });
+  }
+
+  if (newPassword.length < 8) {
+    return res.status(400).json({ error: "Password must be at least 8 characters" });
+  }
 
   try {
     const user = await User.findOne({
@@ -189,6 +206,7 @@ exports.resetPassword = async (req, res) => {
     user.password = hashedPassword;
     user.otp = undefined;
     user.otpExpires = undefined;
+    user.tokenVersion += 1;
 
     await user.save();
 

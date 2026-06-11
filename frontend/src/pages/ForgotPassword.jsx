@@ -10,20 +10,24 @@ import api from "../utils/api";
 const ForgotPassword = () => {
   const[hover, setHover] = useState(false);
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
    const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!email) {
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!normalizedEmail) {
       return toast.error("Please enter your email");
     }
 
     try {
-      await api.post("/auth/forgot-password", { email });
+      setLoading(true);
+      await api.post("/auth/forgot-password", { email: normalizedEmail });
 
-      localStorage.setItem("resetEmail", email);
+      localStorage.setItem("resetEmail", normalizedEmail);
       toast.success("OTP sent to your email");
 
       navigate("/reset-password");
@@ -31,6 +35,8 @@ const ForgotPassword = () => {
     } catch (err) {
       console.error(err);
       toast.error(err.response?.data?.error || "Error");
+    } finally {
+      setLoading(false);
     }
   };
   return (
@@ -106,8 +112,10 @@ const ForgotPassword = () => {
                   }}
                 >
                   <input
+                    type="email"
                     name="email"
                     placeholder="Email"
+                    value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     style={{
                       border: "1px solid #959597",
@@ -121,6 +129,8 @@ const ForgotPassword = () => {
                   />
                 </div>
                 <button
+                  type="submit"
+                  disabled={loading}
                   style={{
                     border: "1px solid ",
                     borderRadius: "0.5rem",
@@ -133,11 +143,13 @@ const ForgotPassword = () => {
                     justifyContent: "center",
                     transform: hover ? "scale(1.01)" : "scale(1)",
                     transition: "all 0.3s ease",
+                    opacity: loading ? 0.7 : 1,
+                    cursor: loading ? "not-allowed" : "pointer",
                   }}
                   onMouseEnter={() => setHover(true)}
                   onMouseLeave={() => setHover(false)}
                 >
-                  Send OTP
+                  {loading ? "Sending..." : "Send OTP"}
                 </button>
               </form>
             </div>

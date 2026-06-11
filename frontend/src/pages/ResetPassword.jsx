@@ -13,6 +13,7 @@ const ResetPassword = () => {
     newPassword: "",
     confirmPassword: "",
   });
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -23,16 +24,20 @@ const ResetPassword = () => {
     e.preventDefault();
 
     const email = localStorage.getItem("resetEmail");
+    const otp = form.otp.trim();
 
     if(!email) return toast.error("Session expired. Please try again.");
-    if (form.otp.length !== 6) return toast.error("Enter valid  OTP");
+    if (!/^\d{6}$/.test(otp)) return toast.error("Enter a valid 6 digit OTP");
+    if (form.newPassword.length < 8)
+      return toast.error("Password must be at least 8 characters");
     if (form.newPassword !== form.confirmPassword)
       return toast.error("Passwords do not match");
 
     try {
+      setLoading(true);
       await api.post("/auth/reset-password", {
         email,
-        otp: form.otp,
+        otp,
         newPassword: form.newPassword,
       });
 
@@ -45,6 +50,8 @@ const ResetPassword = () => {
     } catch (err) {
       console.error(err);
       toast.error(err.response?.data?.error || "Reset failed");
+    } finally {
+      setLoading(false);
     }
   };
   return (
@@ -125,6 +132,9 @@ const ResetPassword = () => {
                   <input
                     name="otp"
                     placeholder="Enter OTP"
+                    value={form.otp}
+                    inputMode="numeric"
+                    maxLength={6}
                     onChange={handleChange}
                     style={{
                       border: "1px solid #959597",
@@ -150,6 +160,7 @@ const ResetPassword = () => {
                     type="password"
                     name="newPassword"
                     placeholder="New Password"
+                    value={form.newPassword}
                     onChange={handleChange}
                     style={{
                       border: "1px solid #959597",
@@ -175,6 +186,7 @@ const ResetPassword = () => {
                     type="password"
                     name="confirmPassword"
                     placeholder="Confirm Password"
+                    value={form.confirmPassword}
                     onChange={handleChange}
                     style={{
                       border: "1px solid #959597",
@@ -188,6 +200,8 @@ const ResetPassword = () => {
                   />
                 </div>
                 <button
+                  type="submit"
+                  disabled={loading}
                   style={{
                     border: "1px solid ",
                     borderRadius: "0.5rem",
@@ -200,13 +214,21 @@ const ResetPassword = () => {
                     justifyContent: "center",
                     transform: hover ? "scale(1.01)" : "scale(1)",
                     transition: "all 0.3s ease",
+                    opacity: loading ? 0.7 : 1,
+                    cursor: loading ? "not-allowed" : "pointer",
                   }}
                   onMouseEnter={() => setHover(true)}
                   onMouseLeave={() => setHover(false)}
                 >
-                  Reset Password
+                  {loading ? "Resetting..." : "Reset Password"}
                 </button>
               </form>
+              <p className="mt-4 text-sm text-gray-500">
+                Didn't get an OTP?{" "}
+                <Link to="/forgot-password" className="font-medium text-[#008cff]">
+                  Request a new one
+                </Link>
+              </p>
             </div>
           </div>
         </div>
