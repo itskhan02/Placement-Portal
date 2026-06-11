@@ -74,12 +74,12 @@ const Home = () => {
           <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
             <Link to={isAuthenticated ? `/${user.role}` : "/login"}>
               <button className="login">
-                {isAuthenticated ? "Dashboard" : "Login"}
+                Login
               </button>
             </Link>
             <Link to={isAuthenticated ? `/${user.role}` : "/register"}>
               <button className="register">
-                {isAuthenticated ? "Dashboard" : "Register"}
+                Register
               </button>
             </Link>
           </div>
